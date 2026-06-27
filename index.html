@@ -144,15 +144,17 @@
         .confirm-dialog .btn-del { background:var(--danger); color:#fff; } .confirm-dialog .btn-del:active { background:#c62828; }
         .confirm-dialog .btn-cancel { background:#f5f5f7; color:var(--text2); }
 
-        .sale-swipe-wrapper { position:relative; overflow:hidden; margin-bottom:8px; border-radius:var(--radius); }
-        .sale-swipe-bg { position:absolute; top:0; left:0; width:100%; height:100%; background:var(--danger); display:flex; align-items:center; justify-content:flex-start; padding-left:20px; border-radius:var(--radius); }
-        .sale-swipe-bg button { background:none; border:none; color:#fff; font-size:18px; font-weight:700; cursor:pointer; padding:10px 20px; }
-        .sale-card-front { position:relative; background:var(--card); border-radius:var(--radius); padding:14px; box-shadow:var(--shadow); transition:transform 0.25s ease; z-index:2; touch-action:pan-y; }
-        .sale-card-front.swiped { transform:translateX(90px); }
+        .sale-card { background:var(--card); border-radius:var(--radius); padding:14px; box-shadow:var(--shadow); margin-bottom:8px; position: relative; }
         .sale-card .sale-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
         .sale-card .sale-date { font-size:12px; color:var(--text3); }
         .sale-card .sale-profit { font-weight:700; color:var(--success); }
-        .sale-card .sale-details { font-size:13px; color:var(--text2); display:flex; gap:12px; flex-wrap:wrap; }
+        .sale-card .sale-details { font-size:13px; color:var(--text2); display:flex; gap:12px; flex-wrap:wrap; padding-right: 5px; }
+        .btn-delete-sale {
+            background: none; border: none; font-size: 18px; cursor: pointer;
+            color: var(--danger); padding: 4px 8px; border-radius: 50%; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-delete-sale:active { background: var(--danger2); transform: scale(0.9); }
 
         .sale-quantity-input { width:60px; padding:8px; border-radius:8px; border:1.5px solid var(--border); font-size:16px; text-align:center; font-family:var(--font); background:#f9f9fb; }
         .sale-discount-input { width:60px; padding:8px; border-radius:8px; border:1.5px solid var(--warning); font-size:16px; text-align:center; font-family:var(--font); background:#f9f9fb; }
@@ -222,9 +224,9 @@
 
 <script>
     (function() {
-        const STORAGE_KEY = 'shelves_inventory_v12';
-        const MAPPINGS_KEY = 'serial_mappings_v8';
-        const SALES_KEY = 'sales_history_v7';
+        const STORAGE_KEY = 'shelves_inventory_v13';
+        const MAPPINGS_KEY = 'serial_mappings_v9';
+        const SALES_KEY = 'sales_history_v8';
 
         function loadData() {
             try {
@@ -474,29 +476,25 @@
             } else {
                 const recentSales = [...salesHistory].reverse().slice(0, 30);
                 recentSales.forEach(sale => {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'sale-swipe-wrapper';
+                    const saleCard = document.createElement('div'); saleCard.className='sale-card';
                     const discountStr = sale.discount > 0 ? `<span>🏷️ خصم: ${sale.discount.toFixed(2)} ₪</span>` : '';
-                    wrapper.innerHTML = `
-                        <div class="sale-swipe-bg">
-                            <button class="reverse-sale-btn" data-sale-id="${sale.id}">إلغاء البيع</button>
-                        </div>
-                        <div class="sale-card-front sale-card" data-sale-id="${sale.id}">
-                            <div class="sale-header">
-                                <strong>${escapeHtml(sale.productName)}</strong>
+                    saleCard.innerHTML = `
+                        <div class="sale-header">
+                            <strong>${escapeHtml(sale.productName)}</strong>
+                            <div style="display:flex; align-items:center; gap:8px;">
                                 <span class="sale-date">${new Date(sale.date).toLocaleString('ar')}</span>
-                            </div>
-                            <div class="sale-details">
-                                <span>🔢 ${escapeHtml(sale.serial)}</span>
-                                <span>📦 الكمية: ${sale.quantity}</span>
-                                <span>💰 السعر: ${sale.unitPrice.toFixed(2)} ₪</span>
-                                <span>💵 الإجمالي: ${sale.totalPrice.toFixed(2)} ₪</span>
-                                ${discountStr}
-                                <span class="sale-profit">📈 الربح: ${sale.totalProfit.toFixed(2)} ₪</span>
+                                <button class="btn-delete-sale" data-sale-id="${sale.id}">🗑️</button>
                             </div>
                         </div>
-                    `;
-                    salesSection.appendChild(wrapper);
+                        <div class="sale-details">
+                            <span>🔢 ${escapeHtml(sale.serial)}</span>
+                            <span>📦 الكمية: ${sale.quantity}</span>
+                            <span>💰 السعر: ${sale.unitPrice.toFixed(2)} ₪</span>
+                            <span>💵 الإجمالي: ${sale.totalPrice.toFixed(2)} ₪</span>
+                            ${discountStr}
+                            <span class="sale-profit">📈 الربح: ${sale.totalProfit.toFixed(2)} ₪</span>
+                        </div>`;
+                    salesSection.appendChild(saleCard);
                 });
                 if(salesHistory.length > 30) {
                     const more = document.createElement('p');
@@ -528,6 +526,7 @@
             }
             $mainContent.appendChild(productsSection);
 
+            // ربط أحداث البيع
             document.querySelectorAll('[data-sell]').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -541,92 +540,25 @@
                 });
             });
 
-            enableSwipeToCancel();
-        }
-
-        function enableSwipeToCancel() {
-            const cards = document.querySelectorAll('.sale-card-front');
-            cards.forEach(card => {
-                let startX = 0, isDragging = false, initialTranslate = 0;
-                const wrapper = card.parentElement;
-                const reverseBtn = wrapper.querySelector('.reverse-sale-btn');
-                const saleId = card.dataset.saleId;
-
-                const onTouchStart = (e) => {
-                    const touch = e.touches[0];
-                    startX = touch.clientX;
-                    const style = window.getComputedStyle(card);
-                    const matrix = new DOMMatrixReadOnly(style.transform);
-                    initialTranslate = matrix.m41;
-                    isDragging = false;
-                };
-
-                const onTouchMove = (e) => {
-                    if (!isDragging && Math.abs(e.touches[0].clientX - startX) > 5) {
-                        isDragging = true;
-                    }
-                    if (!isDragging) return;
-                    e.preventDefault();
-                    const deltaX = e.touches[0].clientX - startX;
-                    let newTranslate = initialTranslate + deltaX;
-                    if (newTranslate < 0) newTranslate = 0;
-                    if (newTranslate > 90) newTranslate = 90;
-                    card.style.transform = `translateX(${newTranslate}px)`;
-                };
-
-                const onTouchEnd = () => {
-                    if (!isDragging) return;
-                    isDragging = false;
-                    const style = window.getComputedStyle(card);
-                    const matrix = new DOMMatrixReadOnly(style.transform);
-                    const currentTranslate = matrix.m41;
-                    if (currentTranslate > 45) {
-                        card.style.transform = 'translateX(90px)';
-                        card.classList.add('swiped');
-                    } else {
-                        card.style.transform = 'translateX(0px)';
-                        card.classList.remove('swiped');
-                    }
-                };
-
-                card.addEventListener('touchstart', onTouchStart, {passive: false});
-                card.addEventListener('touchmove', onTouchMove, {passive: false});
-                card.addEventListener('touchend', onTouchEnd);
-
-                if (reverseBtn) {
-                    reverseBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const sale = salesHistory.find(s => s.id === saleId);
-                        if (sale) {
-                            showConfirm('إلغاء البيع', `إلغاء بيع "${sale.productName}" (${sale.quantity} قطعة) وإرجاعها للمخزون؟`, () => {
-                                reverseSale(saleId);
-                                card.style.transform = 'translateX(0px)';
-                                card.classList.remove('swiped');
-                            });
-                        }
-                    });
-                }
-
-                document.addEventListener('click', function(e) {
-                    if (!wrapper.contains(e.target)) {
-                        card.style.transform = 'translateX(0px)';
-                        card.classList.remove('swiped');
+            // ربط أزرار حذف المبيعات
+            document.querySelectorAll('.btn-delete-sale').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const saleId = this.dataset.saleId;
+                    const sale = salesHistory.find(s => s.id === saleId);
+                    if(sale) {
+                        showConfirm('حذف عملية البيع', `حذف بيع "${sale.productName}" (${sale.quantity} قطعة)؟`, () => {
+                            deleteSale(saleId);
+                        });
                     }
                 });
             });
         }
 
-        function reverseSale(saleId) {
-            const sale = salesHistory.find(s => s.id === saleId);
-            if (!sale) return;
-            const found = findProductById(sale.productId);
-            if (found) {
-                found.product.stock = (found.product.stock || 0) + sale.quantity;
-                saveData(shelves);
-            }
+        function deleteSale(saleId) {
             salesHistory = salesHistory.filter(s => s.id !== saleId);
             saveSales(salesHistory);
-            showToast('تم إلغاء البيع وإرجاع الكمية للمخزون');
+            showToast('تم حذف عملية البيع');
             renderAll();
         }
 
@@ -637,7 +569,6 @@
             if((product.stock||0) < quantity) { showToast('⚠️ المخزون غير كافٍ'); return; }
             const unitPrice = product.price||0, unitCost = product.cost||0;
             const originalTotal = unitPrice * quantity;
-            // لا يمكن أن يتجاوز الخصم المبلغ الإجمالي
             const finalDiscount = Math.min(discount, originalTotal);
             const totalPrice = originalTotal - finalDiscount;
             const totalProfit = (unitPrice - unitCost) * quantity - finalDiscount;
