@@ -61,7 +61,6 @@
             padding-bottom: calc(var(--fab-size) + 32px + var(--safe-bottom));
         }
 
-        /* ========== HEADER ========== */
         .header {
             position: fixed;
             top: 0;
@@ -116,7 +115,7 @@
             text-overflow: ellipsis;
             color: var(--text);
         }
-        .header .btn-search {
+        .header .btn-search, .header .btn-settings {
             width: 36px;
             height: 36px;
             border-radius: 50%;
@@ -132,12 +131,14 @@
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
             transition: var(--transition);
         }
-        .header .btn-search:active {
+        .header .btn-settings.hidden {
+            display: none;
+        }
+        .header .btn-search:active, .header .btn-settings:active {
             transform: scale(0.92);
             background: #e8e8ed;
         }
 
-        /* ========== BREADCRUMB ========== */
         .breadcrumb {
             position: fixed;
             top: calc(var(--header-h) + var(--safe-top));
@@ -156,7 +157,6 @@
             white-space: nowrap;
             -webkit-overflow-scrolling: touch;
             border-bottom: 0.5px solid transparent;
-            transition: var(--transition);
         }
         .breadcrumb span {
             flex-shrink: 0;
@@ -171,7 +171,6 @@
             font-weight: 600;
         }
 
-        /* ========== MAIN CONTENT ========== */
         .main-content {
             padding: 8px 16px;
             display: flex;
@@ -180,7 +179,6 @@
             min-height: 200px;
         }
 
-        /* ========== STATS ROW ========== */
         .stats-row {
             display: flex;
             gap: 8px;
@@ -195,7 +193,6 @@
             padding: 12px 10px;
             text-align: center;
             box-shadow: var(--shadow);
-            transition: var(--transition);
         }
         .stat-chip .stat-val {
             font-size: 24px;
@@ -229,7 +226,6 @@
             color: var(--danger);
         }
 
-        /* ========== CARDS ========== */
         .card {
             background: var(--card);
             border-radius: var(--radius);
@@ -242,7 +238,6 @@
             align-items: center;
             gap: 12px;
             border: 1px solid transparent;
-            -webkit-tap-highlight-color: transparent;
             animation: fadeInUp 0.35s ease both;
         }
         .card:active {
@@ -319,7 +314,6 @@
             font-size: 14px;
             color: #c7c7cc;
             flex-shrink: 0;
-            transition: var(--transition);
         }
         .card .btn-delete {
             width: 30px;
@@ -354,7 +348,6 @@
             }
         }
 
-        /* ========== EMPTY STATE ========== */
         .empty-state {
             text-align: center;
             padding: 40px 20px;
@@ -377,7 +370,6 @@
             line-height: 1.5;
         }
 
-        /* ========== FAB ========== */
         .fab {
             position: fixed;
             bottom: calc(24px + var(--safe-bottom));
@@ -396,17 +388,12 @@
             align-items: center;
             justify-content: center;
             transition: var(--transition);
-            -webkit-tap-highlight-color: transparent;
         }
         .fab:active {
             transform: scale(0.9);
             box-shadow: 0 3px 12px rgba(0, 113, 227, 0.25);
         }
-        .fab .fab-label {
-            display: none;
-        }
 
-        /* ========== MODAL ========== */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -525,7 +512,6 @@
             transform: scale(0.97);
         }
 
-        /* ========== SEARCH BAR ========== */
         .search-bar-wrap {
             padding: 4px 16px 8px;
             position: relative;
@@ -561,7 +547,6 @@
             display: none;
         }
 
-        /* ========== TOAST ========== */
         .toast {
             position: fixed;
             bottom: calc(var(--fab-size) + 40px + var(--safe-bottom));
@@ -585,7 +570,6 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        /* ========== CONFIRM DIALOG ========== */
         .confirm-overlay {
             position: fixed;
             inset: 0;
@@ -665,7 +649,6 @@
             transform: scale(0.95);
         }
 
-        /* ========== RESPONSIVE ========== */
         @media (min-width: 500px) {
             .main-content {
                 max-width: 480px;
@@ -687,36 +670,28 @@
 </head>
 <body>
 
-    <!-- HEADER -->
     <div class="header" id="header">
         <div class="header-inner">
             <button class="btn-back hidden" id="btnBack" title="رجوع">‹</button>
             <span class="title" id="headerTitle">📦 مخزوني</span>
+            <button class="btn-settings hidden" id="btnSettings" title="إدارة ربط السيريال">⚙️</button>
             <button class="btn-search" id="btnSearch" title="بحث">🔍</button>
         </div>
     </div>
 
-    <!-- BREADCRUMB -->
     <div class="breadcrumb" id="breadcrumb">
         <span>🏠</span><span class="sep">›</span><span class="crumb-active">الرئيسية</span>
     </div>
 
-    <!-- SEARCH -->
     <div class="search-bar-wrap hidden" id="searchWrap">
         <span class="search-icon">🔍</span>
         <input type="text" id="searchInput" placeholder="بحث عن منتج، رف، أو نوع...">
     </div>
 
-    <!-- STATS ROW -->
     <div class="stats-row" id="statsRow"></div>
-
-    <!-- MAIN CONTENT -->
     <div class="main-content" id="mainContent"></div>
-
-    <!-- FAB -->
     <button class="fab" id="fab" title="إضافة">+</button>
 
-    <!-- MODAL -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-sheet" id="modalSheet">
             <div class="modal-handle"></div>
@@ -726,7 +701,6 @@
         </div>
     </div>
 
-    <!-- CONFIRM DIALOG -->
     <div class="confirm-overlay" id="confirmOverlay">
         <div class="confirm-dialog">
             <span class="confirm-emoji">⚠️</span>
@@ -739,14 +713,14 @@
         </div>
     </div>
 
-    <!-- TOAST -->
     <div class="toast" id="toast"></div>
 
     <script>
         (function() {
-            // ==================== DATA LAYER ====================
-            const STORAGE_KEY = 'shelves_inventory_data_v2';
+            const STORAGE_KEY = 'shelves_inventory_data_v3';
+            const MAPPINGS_KEY = 'serial_type_mappings_v1';
 
+            // --- Data functions ---
             function loadData() {
                 try {
                     const raw = localStorage.getItem(STORAGE_KEY);
@@ -757,19 +731,32 @@
                 } catch (e) {}
                 return [];
             }
-
             function saveData(shelves) {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(shelves));
+            }
+            function loadMappings() {
+                try {
+                    const raw = localStorage.getItem(MAPPINGS_KEY);
+                    if (raw) {
+                        const arr = JSON.parse(raw);
+                        if (Array.isArray(arr)) return arr;
+                    }
+                } catch (e) {}
+                return [];
+            }
+            function saveMappings(mappings) {
+                localStorage.setItem(MAPPINGS_KEY, JSON.stringify(mappings));
             }
 
             function generateId() {
                 return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
             }
 
-            // ==================== STATE ====================
             let shelves = loadData();
-            let navStack = []; // [{type:'home'}|{type:'shelf',id,name}|{type:'subshelf',id,name,parentId}]
-            let currentView = 'home'; // 'home' | 'shelf' | 'subshelf'
+            let serialMappings = loadMappings();
+
+            let navStack = [];
+            let currentView = 'home';
             let currentShelfId = null;
             let currentSubShelfId = null;
             let searchQuery = '';
@@ -778,17 +765,16 @@
             function getCurrentShelf() {
                 return shelves.find(s => s.id === currentShelfId) || null;
             }
-
             function getCurrentSubShelf() {
                 const shelf = getCurrentShelf();
                 if (!shelf) return null;
                 return (shelf.subShelves || []).find(ss => ss.id === currentSubShelfId) || null;
             }
 
-            // ==================== DOM REFS ====================
             const $headerTitle = document.getElementById('headerTitle');
             const $btnBack = document.getElementById('btnBack');
             const $btnSearch = document.getElementById('btnSearch');
+            const $btnSettings = document.getElementById('btnSettings');
             const $breadcrumb = document.getElementById('breadcrumb');
             const $searchWrap = document.getElementById('searchWrap');
             const $searchInput = document.getElementById('searchInput');
@@ -808,7 +794,6 @@
             const $toast = document.getElementById('toast');
 
             let toastTimer = null;
-
             function showToast(msg) {
                 if (toastTimer) clearTimeout(toastTimer);
                 $toast.textContent = msg;
@@ -816,7 +801,7 @@
                 toastTimer = setTimeout(() => $toast.classList.remove('show'), 2200);
             }
 
-            // ==================== NAVIGATION ====================
+            // --- Navigation ---
             function navigateTo(target, shelfId = null, subShelfId = null, shelfName = '', subShelfName = '') {
                 if (target === 'home') {
                     currentView = 'home';
@@ -824,6 +809,7 @@
                     currentSubShelfId = null;
                     navStack = [];
                     $btnBack.classList.add('hidden');
+                    $btnSettings.classList.remove('hidden');
                     $headerTitle.textContent = '📦 مخزوني';
                     $breadcrumb.innerHTML = '<span>🏠</span><span class="sep">›</span><span class="crumb-active">الرئيسية</span>';
                     $searchWrap.classList.add('hidden');
@@ -835,10 +821,9 @@
                     currentSubShelfId = null;
                     navStack = [{ type: 'shelf', id: shelfId, name: shelfName }];
                     $btnBack.classList.remove('hidden');
+                    $btnSettings.classList.add('hidden');
                     $headerTitle.textContent = shelfName || 'الرف';
-                    $breadcrumb.innerHTML =
-                        '<span>🏠</span><span class="sep">›</span><span class="crumb-active">' + (shelfName ||
-                            'الرف') + '</span>';
+                    $breadcrumb.innerHTML = '<span>🏠</span><span class="sep">›</span><span class="crumb-active">' + (shelfName || 'الرف') + '</span>';
                     $searchWrap.classList.remove('hidden');
                     $searchInput.value = '';
                     searchQuery = '';
@@ -851,11 +836,9 @@
                         { type: 'subshelf', id: subShelfId, name: subShelfName, parentId: shelfId }
                     ];
                     $btnBack.classList.remove('hidden');
+                    $btnSettings.classList.add('hidden');
                     $headerTitle.textContent = subShelfName || 'الرف الفرعي';
-                    $breadcrumb.innerHTML =
-                        '<span>🏠</span><span class="sep">›</span><span>' + (shelfName || 'الرف') +
-                        '</span><span class="sep">›</span><span class="crumb-active">' + (subShelfName ||
-                            'الرف الفرعي') + '</span>';
+                    $breadcrumb.innerHTML = '<span>🏠</span><span class="sep">›</span><span>' + (shelfName || 'الرف') + '</span><span class="sep">›</span><span class="crumb-active">' + (subShelfName || 'الرف الفرعي') + '</span>';
                     $searchWrap.classList.remove('hidden');
                     $searchInput.value = '';
                     searchQuery = '';
@@ -880,12 +863,7 @@
                 else $fab.textContent = '+';
             }
 
-            // ==================== RENDER ====================
-            function renderAll() {
-                renderStats();
-                renderContent();
-            }
-
+            // --- Stats ---
             function getTotalStats() {
                 let totalShelves = shelves.length;
                 let totalSubShelves = 0;
@@ -893,11 +871,9 @@
                 let totalStock = 0;
                 let lowStockCount = 0;
                 let outOfStockCount = 0;
-
                 shelves.forEach(s => {
                     const subs = s.subShelves || [];
                     totalSubShelves += subs.length;
-                    // Also check direct products on shelf
                     const directProds = s.products || [];
                     directProds.forEach(p => {
                         totalProducts++;
@@ -915,42 +891,19 @@
                         });
                     });
                 });
-
-                return { totalShelves, totalSubShelves, totalProducts, totalStock, lowStockCount,
-                outOfStockCount };
+                return { totalShelves, totalSubShelves, totalProducts, totalStock, lowStockCount, outOfStockCount };
             }
 
             function renderStats() {
                 const stats = getTotalStats();
                 if (currentView === 'home') {
                     $statsRow.innerHTML = `
-                <div class="stat-chip accent">
-                  <div class="stat-val">${stats.totalShelves}</div>
-                  <div class="stat-lbl">رف رئيسي</div>
-                </div>
-                <div class="stat-chip">
-                  <div class="stat-val">${stats.totalSubShelves}</div>
-                  <div class="stat-lbl">رف فرعي</div>
-                </div>
-                <div class="stat-chip">
-                  <div class="stat-val">${stats.totalProducts}</div>
-                  <div class="stat-lbl">منتج</div>
-                </div>
-                <div class="stat-chip">
-                  <div class="stat-val">${stats.totalStock}</div>
-                  <div class="stat-lbl">إجمالي المخزون</div>
-                </div>
-                ${stats.lowStockCount > 0 ? `
-                <div class="stat-chip warning-chip">
-                  <div class="stat-val">${stats.lowStockCount}</div>
-                  <div class="stat-lbl">مخزون منخفض</div>
-                </div>` : ''}
-                ${stats.outOfStockCount > 0 ? `
-                <div class="stat-chip danger-chip">
-                  <div class="stat-val">${stats.outOfStockCount}</div>
-                  <div class="stat-lbl">نفذ المخزون</div>
-                </div>` : ''}
-              `;
+                <div class="stat-chip accent"><div class="stat-val">${stats.totalShelves}</div><div class="stat-lbl">رف رئيسي</div></div>
+                <div class="stat-chip"><div class="stat-val">${stats.totalSubShelves}</div><div class="stat-lbl">رف فرعي</div></div>
+                <div class="stat-chip"><div class="stat-val">${stats.totalProducts}</div><div class="stat-lbl">منتج</div></div>
+                <div class="stat-chip"><div class="stat-val">${stats.totalStock}</div><div class="stat-lbl">إجمالي المخزون</div></div>
+                ${stats.lowStockCount > 0 ? `<div class="stat-chip warning-chip"><div class="stat-val">${stats.lowStockCount}</div><div class="stat-lbl">مخزون منخفض</div></div>` : ''}
+                ${stats.outOfStockCount > 0 ? `<div class="stat-chip danger-chip"><div class="stat-val">${stats.outOfStockCount}</div><div class="stat-lbl">نفذ المخزون</div></div>` : ''}`;
                 } else if (currentView === 'shelf') {
                     const shelf = getCurrentShelf();
                     const subsCount = (shelf && shelf.subShelves) ? shelf.subShelves.length : 0;
@@ -965,19 +918,9 @@
                         });
                     }
                     $statsRow.innerHTML = `
-                <div class="stat-chip accent">
-                  <div class="stat-val">${subsCount}</div>
-                  <div class="stat-lbl">رف فرعي</div>
-                </div>
-                <div class="stat-chip">
-                  <div class="stat-val">${totalP}</div>
-                  <div class="stat-lbl">منتج</div>
-                </div>
-                <div class="stat-chip">
-                  <div class="stat-val">${totalS}</div>
-                  <div class="stat-lbl">إجمالي المخزون</div>
-                </div>
-              `;
+                <div class="stat-chip accent"><div class="stat-val">${subsCount}</div><div class="stat-lbl">رف فرعي</div></div>
+                <div class="stat-chip"><div class="stat-val">${totalP}</div><div class="stat-lbl">منتج</div></div>
+                <div class="stat-chip"><div class="stat-val">${totalS}</div><div class="stat-lbl">إجمالي المخزون</div></div>`;
                 } else if (currentView === 'subshelf') {
                     const subshelf = getCurrentSubShelf();
                     const prods = (subshelf && subshelf.products) ? subshelf.products : [];
@@ -985,66 +928,35 @@
                     const lowC = prods.filter(p => (p.stock || 0) > 0 && (p.stock || 0) <= 5).length;
                     const outC = prods.filter(p => (p.stock || 0) === 0).length;
                     $statsRow.innerHTML = `
-                <div class="stat-chip accent">
-                  <div class="stat-val">${prods.length}</div>
-                  <div class="stat-lbl">منتج</div>
-                </div>
-                <div class="stat-chip">
-                  <div class="stat-val">${totalS}</div>
-                  <div class="stat-lbl">إجمالي المخزون</div>
-                </div>
-                ${lowC > 0 ? `
-                <div class="stat-chip warning-chip">
-                  <div class="stat-val">${lowC}</div>
-                  <div class="stat-lbl">مخزون منخفض</div>
-                </div>` : ''}
-                ${outC > 0 ? `
-                <div class="stat-chip danger-chip">
-                  <div class="stat-val">${outC}</div>
-                  <div class="stat-lbl">نفذ المخزون</div>
-                </div>` : ''}
-              `;
+                <div class="stat-chip accent"><div class="stat-val">${prods.length}</div><div class="stat-lbl">منتج</div></div>
+                <div class="stat-chip"><div class="stat-val">${totalS}</div><div class="stat-lbl">إجمالي المخزون</div></div>
+                ${lowC > 0 ? `<div class="stat-chip warning-chip"><div class="stat-val">${lowC}</div><div class="stat-lbl">مخزون منخفض</div></div>` : ''}
+                ${outC > 0 ? `<div class="stat-chip danger-chip"><div class="stat-val">${outC}</div><div class="stat-lbl">نفذ المخزون</div></div>` : ''}`;
                 }
             }
 
+            // --- Render content ---
             function renderContent() {
                 $mainContent.innerHTML = '';
                 const q = searchQuery.toLowerCase().trim();
-
                 if (currentView === 'home') {
-                    // Show all main shelves
                     let filtered = shelves;
-                    if (q) {
-                        filtered = shelves.filter(s => s.name.toLowerCase().includes(q));
-                    }
+                    if (q) filtered = shelves.filter(s => s.name.toLowerCase().includes(q));
                     if (filtered.length === 0) {
-                        $mainContent.innerHTML = `
-                  <div class="empty-state">
-                    <span class="emoji">🏪</span>
-                    <div class="msg">${q ? 'لا توجد نتائج للبحث' : 'لا توجد رفوف بعد'}</div>
-                    <div class="sub">${q ? 'جرّب كلمة بحث مختلفة' : 'اضغط على زر + لإضافة أول رف رئيسي'}</div>
-                  </div>`;
+                        $mainContent.innerHTML = `<div class="empty-state"><span class="emoji">🏪</span><div class="msg">${q ? 'لا توجد نتائج' : 'لا توجد رفوف بعد'}</div><div class="sub">${q ? 'جرّب كلمة بحث مختلفة' : 'اضغط على + لإضافة أول رف رئيسي'}</div></div>`;
                     } else {
                         filtered.forEach((s, i) => {
                             const subsCount = (s.subShelves || []).length;
-                            const directProds = (s.products || []).length;
-                            let totalProds = directProds;
+                            let totalProds = (s.products || []).length;
                             (s.subShelves || []).forEach(ss => { totalProds += (ss.products || []).length; });
                             const card = document.createElement('div');
                             card.className = 'card';
                             card.style.animationDelay = (i * 0.04) + 's';
                             card.innerHTML = `
-                    <div class="icon-box shelf-icon">📦</div>
-                    <div class="info">
-                      <div class="name">${escapeHtml(s.name)}</div>
-                      <div class="meta">
-                        <span>📂 ${subsCount} رف فرعي</span>
-                        <span>📦 ${totalProds} منتج</span>
-                      </div>
-                    </div>
-                    <button class="btn-delete" data-action="delete-shelf" data-id="${s.id}" title="حذف">🗑️</button>
-                    <span class="arrow-left">›</span>
-                  `;
+                        <div class="icon-box shelf-icon">📦</div>
+                        <div class="info"><div class="name">${escapeHtml(s.name)}</div><div class="meta"><span>📂 ${subsCount} رف فرعي</span><span>📦 ${totalProds} منتج</span></div></div>
+                        <button class="btn-delete" data-action="delete-shelf" data-id="${s.id}">🗑️</button>
+                        <span class="arrow-left">›</span>`;
                             card.addEventListener('click', function(e) {
                                 if (e.target.closest('[data-action="delete-shelf"]')) return;
                                 navigateTo('shelf', s.id, null, s.name);
@@ -1054,107 +966,57 @@
                     }
                 } else if (currentView === 'shelf') {
                     const shelf = getCurrentShelf();
-                    if (!shelf) {
-                        navigateTo('home');
-                        return;
-                    }
-                    // Show sub-shelves + direct products
+                    if (!shelf) { navigateTo('home'); return; }
                     let subShelves = shelf.subShelves || [];
                     let directProducts = shelf.products || [];
-
                     if (q) {
                         subShelves = subShelves.filter(ss => ss.name.toLowerCase().includes(q));
-                        directProducts = directProducts.filter(p =>
-                            p.name.toLowerCase().includes(q) ||
-                            p.serial.toLowerCase().includes(q) ||
-                            p.type.toLowerCase().includes(q)
-                        );
+                        directProducts = directProducts.filter(p => p.name.toLowerCase().includes(q) || p.serial.toLowerCase().includes(q) || p.type.toLowerCase().includes(q));
                     }
-
-                    const hasSubShelves = subShelves.length > 0;
-                    const hasProducts = directProducts.length > 0;
-                    const totalItems = subShelves.length + directProducts.length;
-
-                    if (totalItems === 0) {
-                        $mainContent.innerHTML = `
-                  <div class="empty-state">
-                    <span class="emoji">📭</span>
-                    <div class="msg">${q ? 'لا توجد نتائج' : 'الرف فارغ'}</div>
-                    <div class="sub">${q ? 'جرّب كلمة بحث مختلفة' : 'أضف رفوف فرعية أو منتجات مباشرة'}</div>
-                  </div>`;
+                    if (subShelves.length === 0 && directProducts.length === 0) {
+                        $mainContent.innerHTML = `<div class="empty-state"><span class="emoji">📭</span><div class="msg">${q ? 'لا توجد نتائج' : 'الرف فارغ'}</div><div class="sub">${q ? 'جرّب كلمة بحث مختلفة' : 'أضف رفوف فرعية أو منتجات'}</div></div>`;
                     } else {
-                        // Sub-shelves section header
-                        if (hasSubShelves) {
-                            const headerEl = document.createElement('div');
-                            headerEl.style.cssText =
-                                'font-size:13px;font-weight:700;color:#8e8e93;padding:4px 4px 2px;letter-spacing:0.5px;';
-                            headerEl.textContent = '📂 الرفوف الفرعية';
-                            $mainContent.appendChild(headerEl);
+                        if (subShelves.length > 0) {
+                            const h = document.createElement('div');
+                            h.style.cssText = 'font-size:13px;font-weight:700;color:#8e8e93;padding:4px 4px 2px;';
+                            h.textContent = '📂 الرفوف الفرعية';
+                            $mainContent.appendChild(h);
                             subShelves.forEach((ss, i) => {
                                 const prodsCount = (ss.products || []).length;
                                 const card = document.createElement('div');
                                 card.className = 'card';
                                 card.style.animationDelay = (i * 0.04) + 's';
                                 card.innerHTML = `
-                      <div class="icon-box subshelf-icon">📁</div>
-                      <div class="info">
-                        <div class="name">${escapeHtml(ss.name)}</div>
-                        <div class="meta"><span>📦 ${prodsCount} منتج</span></div>
-                      </div>
-                      <button class="btn-delete" data-action="delete-subshelf" data-id="${ss.id}" title="حذف">🗑️</button>
-                      <span class="arrow-left">›</span>
-                    `;
+                            <div class="icon-box subshelf-icon">📁</div>
+                            <div class="info"><div class="name">${escapeHtml(ss.name)}</div><div class="meta"><span>📦 ${prodsCount} منتج</span></div></div>
+                            <button class="btn-delete" data-action="delete-subshelf" data-id="${ss.id}">🗑️</button>
+                            <span class="arrow-left">›</span>`;
                                 card.addEventListener('click', function(e) {
-                                    if (e.target.closest('[data-action="delete-subshelf"]'))
-                                        return;
-                                    navigateTo('subshelf', shelf.id, ss.id, shelf.name, ss
-                                        .name);
+                                    if (e.target.closest('[data-action="delete-subshelf"]')) return;
+                                    navigateTo('subshelf', shelf.id, ss.id, shelf.name, ss.name);
                                 });
                                 $mainContent.appendChild(card);
                             });
                         }
-                        // Direct products section header
-                        if (hasProducts) {
-                            const headerEl2 = document.createElement('div');
-                            headerEl2.style.cssText =
-                                'font-size:13px;font-weight:700;color:#8e8e93;padding:8px 4px 2px;letter-spacing:0.5px;';
-                            headerEl2.textContent = '📦 منتجات مباشرة في هذا الرف';
-                            if (hasSubShelves) headerEl2.style.marginTop = '6px';
-                            $mainContent.appendChild(headerEl2);
-                            directProducts.forEach((p, i) => {
-                                $mainContent.appendChild(createProductCard(p, shelf, null, i));
-                            });
+                        if (directProducts.length > 0) {
+                            const h2 = document.createElement('div');
+                            h2.style.cssText = 'font-size:13px;font-weight:700;color:#8e8e93;padding:8px 4px 2px;margin-top:6px;';
+                            h2.textContent = '📦 منتجات مباشرة';
+                            $mainContent.appendChild(h2);
+                            directProducts.forEach((p, i) => $mainContent.appendChild(createProductCard(p, shelf, null, i)));
                         }
                     }
                 } else if (currentView === 'subshelf') {
                     const subshelf = getCurrentSubShelf();
-                    if (!subshelf) {
-                        const shelf = getCurrentShelf();
-                        navigateTo('shelf', currentShelfId, null, shelf ? shelf.name : '');
-                        return;
-                    }
+                    if (!subshelf) { const shelf = getCurrentShelf(); navigateTo('shelf', currentShelfId, null, shelf ? shelf.name : ''); return; }
                     let products = subshelf.products || [];
-                    if (q) {
-                        products = products.filter(p =>
-                            p.name.toLowerCase().includes(q) ||
-                            p.serial.toLowerCase().includes(q) ||
-                            p.type.toLowerCase().includes(q)
-                        );
-                    }
+                    if (q) products = products.filter(p => p.name.toLowerCase().includes(q) || p.serial.toLowerCase().includes(q) || p.type.toLowerCase().includes(q));
                     if (products.length === 0) {
-                        $mainContent.innerHTML = `
-                  <div class="empty-state">
-                    <span class="emoji">📦</span>
-                    <div class="msg">${q ? 'لا توجد نتائج' : 'لا توجد منتجات في هذا الرف الفرعي'}</div>
-                    <div class="sub">${q ? 'جرّب كلمة بحث مختلفة' : 'اضغط على + لإضافة منتج'}</div>
-                  </div>`;
+                        $mainContent.innerHTML = `<div class="empty-state"><span class="emoji">📦</span><div class="msg">${q ? 'لا توجد نتائج' : 'لا توجد منتجات'}</div><div class="sub">${q ? 'جرّب كلمة بحث مختلفة' : 'اضغط + للإضافة'}</div></div>`;
                     } else {
-                        products.forEach((p, i) => {
-                            $mainContent.appendChild(createProductCard(p, null, subshelf, i));
-                        });
+                        products.forEach((p, i) => $mainContent.appendChild(createProductCard(p, null, subshelf, i)));
                     }
                 }
-                // Attach delete listeners
                 attachDeleteListeners();
             }
 
@@ -1162,23 +1024,14 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.style.animationDelay = (index * 0.04) + 's';
-                let stockBadgeClass = 'badge-stock-good';
-                let stockLabel = 'متوفر';
-                if ((p.stock || 0) === 0) { stockBadgeClass = 'badge-stock-out';
-                    stockLabel = 'نفذ'; } else if ((p.stock || 0) <= 5) { stockBadgeClass = 'badge-stock-low';
-                    stockLabel = 'منخفض'; }
+                let stockBadgeClass = 'badge-stock-good', stockLabel = 'متوفر';
+                if ((p.stock || 0) === 0) { stockBadgeClass = 'badge-stock-out'; stockLabel = 'نفذ'; }
+                else if ((p.stock || 0) <= 5) { stockBadgeClass = 'badge-stock-low'; stockLabel = 'منخفض'; }
                 card.innerHTML = `
             <div class="icon-box product-icon">🏷️</div>
-            <div class="info">
-              <div class="name">${escapeHtml(p.name)}</div>
-              <div class="meta">
-                <span>🔢 ${escapeHtml(p.serial)}</span>
-                <span>📂 ${escapeHtml(p.type)}</span>
-              </div>
-            </div>
+            <div class="info"><div class="name">${escapeHtml(p.name)}</div><div class="meta"><span>🔢 ${escapeHtml(p.serial)}</span><span>📂 ${escapeHtml(p.type)}</span></div></div>
             <span class="badge ${stockBadgeClass}">${stockLabel}: ${p.stock || 0}</span>
-            <button class="btn-delete" data-action="delete-product" data-id="${p.id}" data-parent="${subshelf ? subshelf.id : (shelf ? shelf.id : '')}" data-parent-type="${subshelf ? 'subshelf' : 'shelf'}" title="حذف">🗑️</button>
-          `;
+            <button class="btn-delete" data-action="delete-product" data-id="${p.id}" data-parent="${subshelf ? subshelf.id : (shelf ? shelf.id : '')}" data-parent-type="${subshelf ? 'subshelf' : 'shelf'}">🗑️</button>`;
                 card.addEventListener('click', function(e) {
                     if (e.target.closest('[data-action="delete-product"]')) return;
                     openEditProductModal(p, subshelf, shelf);
@@ -1192,16 +1045,12 @@
                         e.stopPropagation();
                         const id = this.dataset.id;
                         const shelf = shelves.find(s => s.id === id);
-                        showConfirm(
-                            'حذف الرف الرئيسي',
-                            `هل أنت متأكد من حذف "${shelf ? shelf.name : ''}" وجميع محتوياته؟`,
-                            () => {
-                                shelves = shelves.filter(s => s.id !== id);
-                                saveData(shelves);
-                                showToast('تم الحذف ✓');
-                                navigateTo('home');
-                            }
-                        );
+                        showConfirm('حذف الرف الرئيسي', `هل أنت متأكد من حذف "${shelf ? shelf.name : ''}"؟`, () => {
+                            shelves = shelves.filter(s => s.id !== id);
+                            saveData(shelves);
+                            showToast('تم الحذف ✓');
+                            navigateTo('home');
+                        });
                     });
                 });
                 document.querySelectorAll('[data-action="delete-subshelf"]').forEach(btn => {
@@ -1209,21 +1058,15 @@
                         e.stopPropagation();
                         const id = this.dataset.id;
                         const shelf = getCurrentShelf();
-                        const subshelf = shelf ? (shelf.subShelves || []).find(ss => ss.id ===
-                            id) : null;
-                        showConfirm(
-                            'حذف الرف الفرعي',
-                            `هل أنت متأكد من حذف "${subshelf ? subshelf.name : ''}" وجميع منتجاته؟`,
-                            () => {
-                                if (shelf) {
-                                    shelf.subShelves = (shelf.subShelves || []).filter(ss => ss
-                                        .id !== id);
-                                    saveData(shelves);
-                                    showToast('تم الحذف ✓');
-                                    renderAll();
-                                }
+                        const subshelf = shelf ? (shelf.subShelves || []).find(ss => ss.id === id) : null;
+                        showConfirm('حذف الرف الفرعي', `هل أنت متأكد من حذف "${subshelf ? subshelf.name : ''}"؟`, () => {
+                            if (shelf) {
+                                shelf.subShelves = (shelf.subShelves || []).filter(ss => ss.id !== id);
+                                saveData(shelves);
+                                showToast('تم الحذف ✓');
+                                renderAll();
                             }
-                        );
+                        });
                     });
                 });
                 document.querySelectorAll('[data-action="delete-product"]').forEach(btn => {
@@ -1235,41 +1078,26 @@
                         let productName = '';
                         if (parentType === 'subshelf') {
                             const shelf = getCurrentShelf();
-                            const ss = shelf ? (shelf.subShelves || []).find(ss => ss.id ===
-                                parentId) : null;
+                            const ss = shelf ? (shelf.subShelves || []).find(ss => ss.id === parentId) : null;
                             const prod = ss ? (ss.products || []).find(p => p.id === id) : null;
                             productName = prod ? prod.name : '';
                         } else {
                             const shelf = shelves.find(s => s.id === parentId);
-                            const prod = shelf ? (shelf.products || []).find(p => p.id === id) :
-                                null;
+                            const prod = shelf ? (shelf.products || []).find(p => p.id === id) : null;
                             productName = prod ? prod.name : '';
                         }
-                        showConfirm(
-                            'حذف المنتج',
-                            `هل أنت متأكد من حذف "${productName}"؟`,
-                            () => {
-                                if (parentType === 'subshelf') {
-                                    const shelf = getCurrentShelf();
-                                    const ss = shelf ? (shelf.subShelves || []).find(
-                                        ss => ss.id === parentId) : null;
-                                    if (ss) {
-                                        ss.products = (ss.products || []).filter(p => p
-                                            .id !== id);
-                                        saveData(shelves);
-                                    }
-                                } else {
-                                    const shelf = shelves.find(s => s.id === parentId);
-                                    if (shelf) {
-                                        shelf.products = (shelf.products || []).filter(p =>
-                                            p.id !== id);
-                                        saveData(shelves);
-                                    }
-                                }
-                                showToast('تم الحذف ✓');
-                                renderAll();
+                        showConfirm('حذف المنتج', `هل أنت متأكد من حذف "${productName}"؟`, () => {
+                            if (parentType === 'subshelf') {
+                                const shelf = getCurrentShelf();
+                                const ss = shelf ? (shelf.subShelves || []).find(ss => ss.id === parentId) : null;
+                                if (ss) { ss.products = (ss.products || []).filter(p => p.id !== id); saveData(shelves); }
+                            } else {
+                                const shelf = shelves.find(s => s.id === parentId);
+                                if (shelf) { shelf.products = (shelf.products || []).filter(p => p.id !== id); saveData(shelves); }
                             }
-                        );
+                            showToast('تم الحذف ✓');
+                            renderAll();
+                        });
                     });
                 });
             }
@@ -1280,20 +1108,42 @@
                 return div.innerHTML;
             }
 
-            // ==================== MODAL ====================
-            function openModal(title, bodyHtml, primaryLabel, onPrimary, cancelLabel = 'إلغاء', onCancel = null,
-                extraBtn = null) {
+            // --- Auto-fill type from serial ---
+            function getTypeFromSerial(serial) {
+                if (!serial) return null;
+                let bestMatch = null;
+                let bestLen = 0;
+                for (const mapping of serialMappings) {
+                    if (serial.startsWith(mapping.prefix) && mapping.prefix.length > bestLen) {
+                        bestMatch = mapping.type;
+                        bestLen = mapping.prefix.length;
+                    }
+                }
+                return bestMatch;
+            }
+
+            function attachSerialAutoFill(serialInputId, typeInputId) {
+                const serialInput = document.getElementById(serialInputId);
+                const typeInput = document.getElementById(typeInputId);
+                if (!serialInput || !typeInput) return;
+                const handler = () => {
+                    const serial = serialInput.value.trim();
+                    const autoType = getTypeFromSerial(serial);
+                    if (autoType) {
+                        typeInput.value = autoType;
+                    }
+                };
+                serialInput.addEventListener('input', handler);
+            }
+
+            // --- Modals ---
+            function openModal(title, bodyHtml, primaryLabel, onPrimary, cancelLabel = 'إلغاء', onCancel = null, extraBtn = null) {
                 $modalTitle.textContent = title;
                 $modalBody.innerHTML = bodyHtml;
                 let btnsHtml = '';
-                if (extraBtn) {
-                    btnsHtml +=
-                        `<button class="btn btn-danger" id="modalExtraBtn">${extraBtn.label}</button>`;
-                }
-                btnsHtml +=
-                    `<button class="btn btn-cancel" id="modalCancelBtn">${cancelLabel}</button>`;
-                btnsHtml +=
-                `<button class="btn btn-primary" id="modalPrimaryBtn">${primaryLabel}</button>`;
+                if (extraBtn) btnsHtml += `<button class="btn btn-danger" id="modalExtraBtn">${extraBtn.label}</button>`;
+                btnsHtml += `<button class="btn btn-cancel" id="modalCancelBtn">${cancelLabel}</button>`;
+                btnsHtml += `<button class="btn btn-primary" id="modalPrimaryBtn">${primaryLabel}</button>`;
                 $modalBtns.innerHTML = btnsHtml;
                 $modalOverlay.classList.add('active');
 
@@ -1305,43 +1155,20 @@
                     $modalOverlay.classList.remove('active');
                     cleanup();
                 }
-
                 function cleanup() {
                     if ($primaryBtn) $primaryBtn.removeEventListener('click', primaryHandler);
                     if ($cancelBtn) $cancelBtn.removeEventListener('click', cancelHandler);
                     if ($extraBtn) $extraBtn.removeEventListener('click', extraHandler);
                     $modalOverlay.removeEventListener('click', overlayHandler);
                 }
-
-                function primaryHandler(e) {
-                    e.stopPropagation();
-                    if (onPrimary) onPrimary(close);
-                }
-
-                function cancelHandler(e) {
-                    e.stopPropagation();
-                    if (onCancel) onCancel();
-                    close();
-                }
-
-                function extraHandler(e) {
-                    e.stopPropagation();
-                    if (extraBtn && extraBtn.onClick) extraBtn.onClick(close);
-                }
-
-                function overlayHandler(e) {
-                    if (e.target === $modalOverlay) {
-                        if (onCancel) onCancel();
-                        close();
-                    }
-                }
-
+                function primaryHandler(e) { e.stopPropagation(); if (onPrimary) onPrimary(close); }
+                function cancelHandler(e) { e.stopPropagation(); if (onCancel) onCancel(); close(); }
+                function extraHandler(e) { e.stopPropagation(); if (extraBtn && extraBtn.onClick) extraBtn.onClick(close); }
+                function overlayHandler(e) { if (e.target === $modalOverlay) { if (onCancel) onCancel(); close(); } }
                 if ($primaryBtn) $primaryBtn.addEventListener('click', primaryHandler);
                 if ($cancelBtn) $cancelBtn.addEventListener('click', cancelHandler);
                 if ($extraBtn) $extraBtn.addEventListener('click', extraHandler);
                 $modalOverlay.addEventListener('click', overlayHandler);
-
-                // Focus first input
                 setTimeout(() => {
                     const firstInput = $modalBody.querySelector('input');
                     if (firstInput) firstInput.focus();
@@ -1352,285 +1179,200 @@
                 $modalOverlay.classList.remove('active');
             }
 
-            // ==================== ADD/EDIT ACTIONS ====================
             function openAddShelfModal() {
-                openModal(
-                    'إضافة رف رئيسي جديد',
-                    `<div class="form-group"><label>اسم الرف</label><input type="text" id="inputShelfName" placeholder="مثال: رف المستودع الرئيسي"></div>`,
-                    'إضافة',
-                    (close) => {
-                        const name = document.getElementById('inputShelfName').value.trim();
-                        if (!name) { showToast('⚠️ الرجاء إدخال اسم الرف'); return; }
-                        shelves.push({
-                            id: generateId(),
-                            name: name,
-                            subShelves: [],
-                            products: []
-                        });
-                        saveData(shelves);
-                        close();
-                        showToast('✅ تم إضافة الرف');
-                        renderAll();
-                    }
-                );
+                openModal('إضافة رف رئيسي', `<div class="form-group"><label>اسم الرف</label><input id="inputShelfName" placeholder="مثال: رف المستودع"></div>`, 'إضافة', (close) => {
+                    const name = document.getElementById('inputShelfName').value.trim();
+                    if (!name) { showToast('⚠️ الرجاء إدخال اسم الرف'); return; }
+                    shelves.push({ id: generateId(), name, subShelves: [], products: [] });
+                    saveData(shelves);
+                    close();
+                    showToast('✅ تم إضافة الرف');
+                    renderAll();
+                });
             }
 
             function openAddSubShelfModal() {
-                openModal(
-                    'إضافة رف فرعي',
-                    `<div class="form-group"><label>اسم الرف الفرعي</label><input type="text" id="inputSubShelfName" placeholder="مثال: الرف A1"></div>`,
-                    'إضافة',
-                    (close) => {
-                        const name = document.getElementById('inputSubShelfName').value.trim();
-                        if (!name) { showToast('⚠️ الرجاء إدخال اسم الرف الفرعي'); return; }
-                        const shelf = getCurrentShelf();
-                        if (!shelf) { close(); return; }
-                        if (!shelf.subShelves) shelf.subShelves = [];
-                        shelf.subShelves.push({
-                            id: generateId(),
-                            name: name,
-                            products: []
-                        });
-                        saveData(shelves);
-                        close();
-                        showToast('✅ تم إضافة الرف الفرعي');
-                        renderAll();
-                    }
-                );
+                openModal('إضافة رف فرعي', `<div class="form-group"><label>اسم الرف الفرعي</label><input id="inputSubShelfName" placeholder="مثال: رف A1"></div>`, 'إضافة', (close) => {
+                    const name = document.getElementById('inputSubShelfName').value.trim();
+                    if (!name) { showToast('⚠️ الرجاء إدخال الاسم'); return; }
+                    const shelf = getCurrentShelf();
+                    if (!shelf) { close(); return; }
+                    if (!shelf.subShelves) shelf.subShelves = [];
+                    shelf.subShelves.push({ id: generateId(), name, products: [] });
+                    saveData(shelves);
+                    close();
+                    showToast('✅ تم إضافة الرف الفرعي');
+                    renderAll();
+                });
             }
 
             function openAddProductModal() {
                 const shelf = getCurrentShelf();
                 const subshelf = getCurrentSubShelf();
                 const targetLabel = subshelf ? subshelf.name : (shelf ? shelf.name : '');
-                openModal(
-                    'إضافة منتج' + (targetLabel ? ' إلى: ' + targetLabel : ''),
-                    `
-            <div class="form-group"><label>الرقم التسلسلي</label><input type="text" id="inputSerial" placeholder="مثال: PRD-001"></div>
-            <div class="form-group"><label>اسم المنتج</label><input type="text" id="inputProdName" placeholder="مثال: هاتف ذكي"></div>
-            <div class="form-group"><label>النوع / الفئة</label><input type="text" id="inputProdType" placeholder="مثال: إلكترونيات"></div>
-            <div class="form-group"><label>عدد المخزون</label><input type="number" id="inputStock" placeholder="0" min="0" value="0"></div>
-          `,
-                    'إضافة',
-                    (close) => {
+                openModal('إضافة منتج' + (targetLabel ? ' إلى: ' + targetLabel : ''),
+                    `<div class="form-group"><label>الرقم التسلسلي</label><input id="inputSerial" placeholder="مثال: 00004-12"></div>
+                     <div class="form-group"><label>اسم المنتج</label><input id="inputProdName" placeholder="اسم المنتج"></div>
+                     <div class="form-group"><label>النوع / الفئة</label><input id="inputProdType" placeholder="يكتشف تلقائياً من السيريال"></div>
+                     <div class="form-group"><label>عدد المخزون</label><input type="number" id="inputStock" placeholder="0" min="0" value="0"></div>`,
+                    'إضافة', (close) => {
                         const serial = document.getElementById('inputSerial').value.trim();
                         const name = document.getElementById('inputProdName').value.trim();
                         const type = document.getElementById('inputProdType').value.trim();
-                        const stockStr = document.getElementById('inputStock').value.trim();
-                        const stock = parseInt(stockStr, 10);
-                        if (!serial) { showToast('⚠️ الرجاء إدخال الرقم التسلسلي'); return; }
-                        if (!name) { showToast('⚠️ الرجاء إدخال اسم المنتج'); return; }
-                        if (!type) { showToast('⚠️ الرجاء إدخال نوع المنتج'); return; }
-                        if (isNaN(stock) || stock < 0) { showToast('⚠️ الرجاء إدخال عدد مخزون صحيح'); return; }
-                        const product = {
-                            id: generateId(),
-                            serial: serial,
-                            name: name,
-                            type: type,
-                            stock: stock
-                        };
+                        const stock = parseInt(document.getElementById('inputStock').value, 10);
+                        if (!serial || !name || !type || isNaN(stock) || stock < 0) { showToast('⚠️ جميع الحقول مطلوبة'); return; }
+                        const product = { id: generateId(), serial, name, type, stock };
                         if (currentView === 'subshelf' && subshelf) {
                             if (!subshelf.products) subshelf.products = [];
                             subshelf.products.push(product);
                         } else if (currentView === 'shelf' && shelf) {
                             if (!shelf.products) shelf.products = [];
                             shelf.products.push(product);
-                        } else {
-                            showToast('⚠️ خطأ في تحديد الموقع');
-                            close();
-                            return;
                         }
                         saveData(shelves);
                         close();
                         showToast('✅ تم إضافة المنتج');
                         renderAll();
-                    }
-                );
+                    }, 'إلغاء', null, null);
+                setTimeout(() => attachSerialAutoFill('inputSerial', 'inputProdType'), 100);
             }
 
             function openEditProductModal(product, subshelf, shelf) {
                 const targetLabel = subshelf ? subshelf.name : (shelf ? shelf.name : '');
-                openModal(
-                    'تعديل المنتج' + (targetLabel ? ' - ' + targetLabel : ''),
-                    `
-            <div class="form-group"><label>الرقم التسلسلي</label><input type="text" id="inputSerial" value="${escapeHtml(product.serial)}"></div>
-            <div class="form-group"><label>اسم المنتج</label><input type="text" id="inputProdName" value="${escapeHtml(product.name)}"></div>
-            <div class="form-group"><label>النوع / الفئة</label><input type="text" id="inputProdType" value="${escapeHtml(product.type)}"></div>
-            <div class="form-group"><label>عدد المخزون</label><input type="number" id="inputStock" value="${product.stock || 0}" min="0"></div>
-          `,
-                    'حفظ التعديلات',
-                    (close) => {
+                openModal('تعديل المنتج' + (targetLabel ? ' - ' + targetLabel : ''),
+                    `<div class="form-group"><label>الرقم التسلسلي</label><input id="inputSerial" value="${escapeHtml(product.serial)}"></div>
+                     <div class="form-group"><label>اسم المنتج</label><input id="inputProdName" value="${escapeHtml(product.name)}"></div>
+                     <div class="form-group"><label>النوع / الفئة</label><input id="inputProdType" value="${escapeHtml(product.type)}"></div>
+                     <div class="form-group"><label>عدد المخزون</label><input type="number" id="inputStock" value="${product.stock || 0}" min="0"></div>`,
+                    'حفظ', (close) => {
                         const serial = document.getElementById('inputSerial').value.trim();
                         const name = document.getElementById('inputProdName').value.trim();
                         const type = document.getElementById('inputProdType').value.trim();
-                        const stockStr = document.getElementById('inputStock').value.trim();
-                        const stock = parseInt(stockStr, 10);
-                        if (!serial || !name || !type || isNaN(stock) || stock < 0) {
-                            showToast('⚠️ جميع الحقول مطلوبة');
-                            return;
-                        }
-                        product.serial = serial;
-                        product.name = name;
-                        product.type = type;
-                        product.stock = stock;
+                        const stock = parseInt(document.getElementById('inputStock').value, 10);
+                        if (!serial || !name || !type || isNaN(stock) || stock < 0) { showToast('⚠️ جميع الحقول مطلوبة'); return; }
+                        product.serial = serial; product.name = name; product.type = type; product.stock = stock;
                         saveData(shelves);
                         close();
-                        showToast('✅ تم تحديث المنتج');
+                        showToast('✅ تم التحديث');
                         renderAll();
-                    },
-                    'إلغاء',
-                    null,
-                    {
+                    }, 'إلغاء', null, {
                         label: 'حذف المنتج',
                         onClick: (close) => {
                             close();
-                            showConfirm(
-                                'حذف المنتج',
-                                `هل أنت متأكد من حذف "${product.name}"؟`,
-                                () => {
-                                    if (subshelf) {
-                                        subshelf.products = (subshelf.products || []).filter(p => p
-                                            .id !== product.id);
-                                    } else if (shelf) {
-                                        shelf.products = (shelf.products || []).filter(p => p.id !==
-                                            product.id);
-                                    }
-                                    saveData(shelves);
-                                    showToast('تم الحذف ✓');
-                                    renderAll();
-                                }
-                            );
+                            showConfirm('حذف المنتج', `هل أنت متأكد من حذف "${product.name}"؟`, () => {
+                                if (subshelf) subshelf.products = (subshelf.products || []).filter(p => p.id !== product.id);
+                                else if (shelf) shelf.products = (shelf.products || []).filter(p => p.id !== product.id);
+                                saveData(shelves);
+                                showToast('تم الحذف ✓');
+                                renderAll();
+                            });
                         }
-                    }
-                );
+                    });
+                setTimeout(() => attachSerialAutoFill('inputSerial', 'inputProdType'), 100);
             }
 
-            // ==================== CONFIRM DIALOG ====================
+            function openMappingsModal() {
+                let mappingsHtml = '';
+                if (serialMappings.length === 0) {
+                    mappingsHtml = '<p style="text-align:center;color:#8e8e93;">لا توجد قواعد بعد</p>';
+                } else {
+                    mappingsHtml = '<ul style="list-style:none;padding:0;margin:0 0 16px;">';
+                    serialMappings.forEach((m, idx) => {
+                        mappingsHtml += `<li style="display:flex;align-items:center;justify-content:space-between;background:#f5f5f7;border-radius:8px;padding:8px 12px;margin-bottom:6px;">
+                            <span><strong>${escapeHtml(m.prefix)}</strong> ← ${escapeHtml(m.type)}</span>
+                            <button class="btn-delete-mapping" data-index="${idx}" style="background:none;border:none;font-size:18px;cursor:pointer;color:#ff3b30;">🗑️</button>
+                        </li>`;
+                    });
+                    mappingsHtml += '</ul>';
+                }
+                mappingsHtml += `<div style="display:flex;gap:8px;align-items:flex-end;">
+                    <div class="form-group" style="flex:1;margin-bottom:0;"><label>بادئة السيريال</label><input id="newPrefix" placeholder="مثلاً 00004"></div>
+                    <div class="form-group" style="flex:1;margin-bottom:0;"><label>النوع التلقائي</label><input id="newType" placeholder="ذكاء اصطناعي"></div>
+                    <button id="addMappingBtn" style="height:44px;padding:0 16px;border-radius:8px;border:none;background:#0071e3;color:#fff;font-weight:600;flex-shrink:0;">إضافة</button>
+                </div>`;
+                openModal('⚙️ إدارة ربط السيريال', mappingsHtml, 'إغلاق', (close) => close(), 'إغلاق');
+                document.getElementById('addMappingBtn').addEventListener('click', () => {
+                    const prefix = document.getElementById('newPrefix').value.trim();
+                    const type = document.getElementById('newType').value.trim();
+                    if (!prefix || !type) { showToast('⚠️ املأ الحقلين'); return; }
+                    serialMappings.push({ prefix, type });
+                    saveMappings(serialMappings);
+                    showToast('✅ تمت الإضافة');
+                    closeModal();
+                    setTimeout(() => openMappingsModal(), 300);
+                });
+                document.querySelectorAll('.btn-delete-mapping').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const idx = parseInt(e.target.closest('button').dataset.index, 10);
+                        serialMappings.splice(idx, 1);
+                        saveMappings(serialMappings);
+                        showToast('تم الحذف');
+                        closeModal();
+                        setTimeout(() => openMappingsModal(), 300);
+                    });
+                });
+            }
+
+            // --- Confirm dialog ---
             function showConfirm(title, sub, callback) {
                 $confirmMsg.textContent = title;
-                $confirmSub.textContent = sub || 'لا يمكن التراجع عن هذا الإجراء';
+                $confirmSub.textContent = sub || 'لا يمكن التراجع';
                 confirmCallback = callback;
                 $confirmOverlay.classList.add('active');
             }
-
             function hideConfirm() {
                 $confirmOverlay.classList.remove('active');
                 confirmCallback = null;
             }
 
-            // ==================== EVENT LISTENERS ====================
+            // --- Event bindings ---
             $btnBack.addEventListener('click', goBack);
-
-            $btnSearch.addEventListener('click', function() {
-                if ($searchWrap.classList.contains('hidden')) {
-                    $searchWrap.classList.remove('hidden');
-                    $searchInput.focus();
-                } else {
-                    $searchWrap.classList.add('hidden');
+            $btnSearch.addEventListener('click', () => {
+                if ($searchWrap.classList.contains('hidden')) { $searchWrap.classList.remove('hidden');
+                    $searchInput.focus(); } else { $searchWrap.classList.add('hidden');
                     $searchInput.value = '';
                     searchQuery = '';
-                    renderAll();
-                }
+                    renderAll(); }
             });
+            $searchInput.addEventListener('input', function() { searchQuery = this.value;
+                renderAll(); });
+            $btnSettings.addEventListener('click', openMappingsModal);
 
-            $searchInput.addEventListener('input', function() {
-                searchQuery = this.value;
-                renderAll();
-            });
-
-            $fab.addEventListener('click', function() {
-                if (currentView === 'home') {
-                    openAddShelfModal();
-                } else if (currentView === 'shelf') {
-                    // Show choice: add sub-shelf or add product directly
-                    showFabChoiceForShelf();
-                } else if (currentView === 'subshelf') {
-                    openAddProductModal();
-                }
+            $fab.addEventListener('click', () => {
+                if (currentView === 'home') openAddShelfModal();
+                else if (currentView === 'shelf') showFabChoiceForShelf();
+                else if (currentView === 'subshelf') openAddProductModal();
             });
 
             function showFabChoiceForShelf() {
                 const shelf = getCurrentShelf();
                 if (!shelf) return;
-                openModal(
-                    'إضافة إلى: ' + shelf.name,
-                    `<p style="text-align:center;color:#6d6d72;margin-bottom:8px;">اختر نوع الإضافة:</p>`,
-                    '📂 إضافة رف فرعي',
-                    (close) => {
-                        close();
-                        setTimeout(() => openAddSubShelfModal(), 300);
-                    },
-                    'إلغاء',
-                    null,
-                    {
-                        label: '📦 إضافة منتج مباشر',
-                        onClick: (close) => {
-                            close();
-                            setTimeout(() => openAddProductModal(), 300);
-                        }
-                    }
-                );
-                // Override primary button text
+                openModal('إضافة إلى: ' + shelf.name, '<p style="text-align:center;color:#6d6d72;">اختر نوع الإضافة:</p>', '📂 إضافة رف فرعي', (close) => { close();
+                    setTimeout(openAddSubShelfModal, 300); }, 'إلغاء', null, { label: '📦 إضافة منتج مباشر', onClick: (close) => { close();
+                        setTimeout(openAddProductModal, 300); } });
                 setTimeout(() => {
-                    const primBtn = document.getElementById('modalPrimaryBtn');
-                    const extraBtn = document.getElementById('modalExtraBtn');
-                    if (primBtn) primBtn.textContent = '📂 إضافة رف فرعي';
-                    if (extraBtn) extraBtn.textContent = '📦 إضافة منتج مباشر';
+                    const prim = document.getElementById('modalPrimaryBtn');
+                    const extra = document.getElementById('modalExtraBtn');
+                    if (prim) prim.textContent = '📂 إضافة رف فرعي';
+                    if (extra) extra.textContent = '📦 إضافة منتج مباشر';
                 }, 50);
             }
 
-            $confirmOk.addEventListener('click', function() {
-                if (confirmCallback) {
-                    confirmCallback();
-                }
-                hideConfirm();
-            });
+            $confirmOk.addEventListener('click', () => { if (confirmCallback) confirmCallback();
+                hideConfirm(); });
             $confirmCancel.addEventListener('click', hideConfirm);
-            $confirmOverlay.addEventListener('click', function(e) {
-                if (e.target === $confirmOverlay) hideConfirm();
-            });
+            $confirmOverlay.addEventListener('click', (e) => { if (e.target === $confirmOverlay) hideConfirm(); });
 
-            // Close modals on overlay click (handled in openModal)
-            // Swipe down to close modal (basic touch handling)
             let touchStartY = 0;
-            $modalSheet.addEventListener('touchstart', function(e) {
-                touchStartY = e.touches[0].clientY;
-            }, { passive: true });
-            $modalSheet.addEventListener('touchmove', function(e) {
-                const diff = e.touches[0].clientY - touchStartY;
-                if (diff > 80 && $modalSheet.scrollTop <= 5) {
-                    closeModal();
-                }
-            }, { passive: true });
+            $modalSheet.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
+            $modalSheet.addEventListener('touchmove', (e) => { if (e.touches[0].clientY - touchStartY > 80 && $modalSheet.scrollTop <= 5) closeModal(); }, { passive: true });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if ($confirmOverlay.classList.contains('active')) hideConfirm(); else if ($modalOverlay.classList.contains('active')) closeModal(); } });
 
-            // Keyboard support
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    if ($confirmOverlay.classList.contains('active')) {
-                        hideConfirm();
-                    } else if ($modalOverlay.classList.contains('active')) {
-                        closeModal();
-                    }
-                }
-            });
-
-            // ==================== INITIAL RENDER ====================
             function init() {
                 navigateTo('home');
-                // If there are shelves, show them
-                if (shelves.length > 0) {
-                    renderAll();
-                } else {
-                    renderAll();
-                }
             }
-
             init();
-
-            console.log('📦 نظام إدارة المخزون - الرفوف الذكية | جاهز للاستخدام');
-            console.log('✨ الميزات: رفوف رئيسية | رفوف فرعية | منتجات برقم تسلسلي واسم ونوع ومخزون');
-            console.log('💾 البيانات محفوظة في المتصفح (localStorage)');
-            console.log('📱 مُحسّن للآيفون مع واجهة عربية كاملة');
+            console.log('📦 تطبيق المخزون الذكي مع ربط السيريال بالنوع');
         })();
     </script>
 </body>
