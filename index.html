@@ -144,11 +144,17 @@
         .confirm-dialog .btn-del { background:var(--danger); color:#fff; } .confirm-dialog .btn-del:active { background:#c62828; }
         .confirm-dialog .btn-cancel { background:#f5f5f7; color:var(--text2); }
 
-        .sale-card { background:var(--card); border-radius:var(--radius); padding:14px; box-shadow:var(--shadow); margin-bottom:8px; }
+        .sale-card { background:var(--card); border-radius:var(--radius); padding:14px; box-shadow:var(--shadow); margin-bottom:8px; position: relative; }
         .sale-card .sale-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
         .sale-card .sale-date { font-size:12px; color:var(--text3); }
         .sale-card .sale-profit { font-weight:700; color:var(--success); }
-        .sale-card .sale-details { font-size:13px; color:var(--text2); display:flex; gap:12px; flex-wrap:wrap; }
+        .sale-card .sale-details { font-size:13px; color:var(--text2); display:flex; gap:12px; flex-wrap:wrap; padding-right: 5px; }
+        .btn-delete-sale {
+            background: none; border: none; font-size: 18px; cursor: pointer;
+            color: var(--danger); padding: 4px 8px; border-radius: 50%; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-delete-sale:active { background: var(--danger2); transform: scale(0.9); }
 
         .sale-quantity-input { width:80px; padding:8px; border-radius:8px; border:1.5px solid var(--border); font-size:16px; text-align:center; font-family:var(--font); background:#f9f9fb; }
         .sale-quantity-input:focus { outline:none; border-color:var(--accent); }
@@ -217,9 +223,9 @@
 
 <script>
     (function() {
-        const STORAGE_KEY = 'shelves_inventory_v7';
-        const MAPPINGS_KEY = 'serial_mappings_v3';
-        const SALES_KEY = 'sales_history_v2';
+        const STORAGE_KEY = 'shelves_inventory_v8';
+        const MAPPINGS_KEY = 'serial_mappings_v4';
+        const SALES_KEY = 'sales_history_v3';
 
         function loadData() {
             try {
@@ -467,18 +473,32 @@
             if(salesHistory.length === 0) {
                 salesSection.innerHTML += '<div class="empty-state"><span class="emoji">📋</span><div class="msg">لا توجد مبيعات بعد</div><div class="sub">ابحث عن منتج وأدخل الكمية المباعة</div></div>';
             } else {
-                const recentSales = [...salesHistory].reverse().slice(0, 20);
+                const recentSales = [...salesHistory].reverse().slice(0, 30); // increased limit a bit
                 recentSales.forEach(sale => {
                     const saleCard = document.createElement('div'); saleCard.className='sale-card';
                     saleCard.innerHTML = `
-                        <div class="sale-header"><strong>${escapeHtml(sale.productName)}</strong><span class="sale-date">${new Date(sale.date).toLocaleString('ar')}</span></div>
+                        <div class="sale-header">
+                            <strong>${escapeHtml(sale.productName)}</strong>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span class="sale-date">${new Date(sale.date).toLocaleString('ar')}</span>
+                                <button class="btn-delete-sale" data-sale-id="${sale.id}">🗑️</button>
+                            </div>
+                        </div>
                         <div class="sale-details">
-                            <span>🔢 ${escapeHtml(sale.serial)}</span><span>📦 الكمية: ${sale.quantity}</span><span>💰 السعر: ${sale.unitPrice.toFixed(2)} ₪</span>
-                            <span>💵 الإجمالي: ${sale.totalPrice.toFixed(2)} ₪</span><span class="sale-profit">📈 الربح: ${sale.totalProfit.toFixed(2)} ₪</span>
+                            <span>🔢 ${escapeHtml(sale.serial)}</span>
+                            <span>📦 الكمية: ${sale.quantity}</span>
+                            <span>💰 السعر: ${sale.unitPrice.toFixed(2)} ₪</span>
+                            <span>💵 الإجمالي: ${sale.totalPrice.toFixed(2)} ₪</span>
+                            <span class="sale-profit">📈 الربح: ${sale.totalProfit.toFixed(2)} ₪</span>
                         </div>`;
                     salesSection.appendChild(saleCard);
                 });
-                if(salesHistory.length > 20) { const more = document.createElement('p'); more.style.cssText='text-align:center;color:var(--text3);font-size:13px;margin-top:8px;'; more.textContent = `... و ${salesHistory.length - 20} عملية بيع أخرى`; salesSection.appendChild(more); }
+                if(salesHistory.length > 30) {
+                    const more = document.createElement('p');
+                    more.style.cssText='text-align:center;color:var(--text3);font-size:13px;margin-top:8px;';
+                    more.textContent = `... و ${salesHistory.length - 30} عملية بيع أخرى`;
+                    salesSection.appendChild(more);
+                }
             }
             $mainContent.appendChild(salesSection);
 
@@ -496,12 +516,13 @@
                         ${stockBadge}
                         <input type="number" class="sale-quantity-input" id="qty_${p.id}" placeholder="0" min="0" max="${p.stock||0}" value="0" style="width:60px;">
                         <button class="btn btn-success" style="padding:8px 12px;font-size:13px;flex-shrink:0;" data-sell="${p.id}">بيع</button>`;
-                    card.addEventListener('click', e => { if(!e.target.closest('button')) { const inp=card.querySelector('.sale-quantity-input'); if(inp) inp.focus(); } });
+                    card.addEventListener('click', e => { if(!e.target.closest('button') && !e.target.closest('input')) { const inp=card.querySelector('.sale-quantity-input'); if(inp) inp.focus(); } });
                     productsSection.appendChild(card);
                 });
             }
             $mainContent.appendChild(productsSection);
 
+            // Attach sell listeners
             document.querySelectorAll('[data-sell]').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -512,6 +533,27 @@
                     processSale(prodId, quantity);
                 });
             });
+
+            // Attach delete sale listeners
+            document.querySelectorAll('.btn-delete-sale').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const saleId = this.dataset.saleId;
+                    const sale = salesHistory.find(s => s.id === saleId);
+                    if(sale) {
+                        showConfirm('حذف عملية البيع', `حذف بيع "${sale.productName}" (${sale.quantity} قطعة)؟`, () => {
+                            deleteSale(saleId);
+                        });
+                    }
+                });
+            });
+        }
+
+        function deleteSale(saleId) {
+            salesHistory = salesHistory.filter(s => s.id !== saleId);
+            saveSales(salesHistory);
+            showToast('تم حذف عملية البيع');
+            renderAll();
         }
 
         function processSale(prodId, quantity) {
