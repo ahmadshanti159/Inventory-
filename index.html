@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#f2f2f7">
-    <title>نظام إدارة المخزون والمبيعات</title>
+    <title>مخزوني SMART</title>
     <style>
         :root {
             --bg: #f2f2f7;
@@ -45,11 +45,22 @@
             padding-top:calc(var(--header-h) + var(--safe-top) + var(--breadcrumb-h));
             padding-bottom:calc(var(--fab-size) + 32px + var(--safe-bottom));
         }
+        #splash-screen {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(145deg, #0071e3 0%, #005bbf 100%);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 9999; opacity: 1; transition: opacity 0.6s ease;
+            pointer-events: all;
+        }
+        #splash-screen.fade-out { opacity: 0; pointer-events: none; }
+        .splash-content { text-align: center; color: #fff; }
+        .splash-content .logo { font-size: 72px; margin-bottom: 16px; }
+        .splash-content h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+        .splash-content p { font-size: 16px; opacity: 0.9; font-weight: 400; }
+
         .header { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(242,242,247,0.82); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); padding-top:var(--safe-top); border-bottom:0.5px solid var(--border); }
         .header-inner { height:var(--header-h); display:flex; align-items:center; padding:0 10px; gap:4px; }
-        .header .btn-icon {
-            width:36px; height:36px; border-radius:50%; border:none; background:var(--card); color:var(--text2); font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:var(--transition); flex-shrink:0; box-shadow:0 1px 4px rgba(0,0,0,0.06);
-        }
+        .header .btn-icon { width:36px; height:36px; border-radius:50%; border:none; background:var(--card); color:var(--text2); font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:var(--transition); flex-shrink:0; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
         .header .btn-back { color:var(--accent); font-size:20px; }
         .header .btn-back.hidden { opacity:0; pointer-events:none; transform:translateX(-12px); }
         .header .btn-settings.hidden, .header .btn-backup.hidden, .header .btn-sales.hidden { display:none; }
@@ -62,7 +73,6 @@
         .breadcrumb .crumb-active { color:var(--accent); font-weight:600; }
 
         .main-content { padding:8px 16px; display:flex; flex-direction:column; gap:10px; min-height:200px; }
-
         .stats-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:4px; padding:0 16px; }
         .stat-chip { flex:1; min-width:70px; background:var(--card); border-radius:var(--radius-sm); padding:12px 10px; text-align:center; box-shadow:var(--shadow); }
         .stat-chip .stat-val { font-size:24px; font-weight:700; letter-spacing:-0.5px; color:var(--text); line-height:1; }
@@ -73,10 +83,7 @@
         .stat-chip.success-chip { background:var(--success2); } .stat-chip.success-chip .stat-val { color:var(--success); }
 
         .total-bars { display:flex; gap:8px; margin:0 16px 8px; flex-wrap:wrap; }
-        .total-bar-btn {
-            flex:1; min-width:120px; padding:12px 10px; background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); border:1.5px solid var(--border);
-            display:flex; align-items:center; justify-content:center; gap:4px; cursor:pointer; font-size:14px; font-weight:700; color:var(--text); transition:var(--transition);
-        }
+        .total-bar-btn { flex:1; min-width:120px; padding:12px 10px; background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; gap:4px; cursor:pointer; font-size:14px; font-weight:700; color:var(--text); transition:var(--transition); }
         .total-bar-btn:active { transform:scale(0.98); background:#f0f0f5; }
         .total-bar-btn .val { color:var(--accent); letter-spacing:-0.5px; }
         .total-bar-btn.profit .val { color:#34c759; }
@@ -97,7 +104,6 @@
         .card .btn-delete:active { background:var(--danger2); color:var(--danger); transform:scale(0.9); }
 
         @keyframes fadeInUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-
         .empty-state { text-align:center; padding:40px 20px; animation:fadeInUp 0.5s ease; }
         .empty-state .emoji { font-size:56px; display:block; margin-bottom:12px; }
         .empty-state .msg { font-size:16px; font-weight:600; color:var(--text); margin-bottom:4px; }
@@ -158,7 +164,6 @@
 
         .section-title { font-size:13px; font-weight:700; color:#8e8e93; padding:4px 0; letter-spacing:0.5px; }
 
-        /* Charts styles */
         .chart-container { background: var(--card); border-radius: var(--radius); padding: 16px; margin-top: 8px; }
         .donut-chart { width: 160px; height: 160px; margin: 0 auto; border-radius: 50%; position: relative; }
         .donut-inner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-size: 14px; font-weight: 700; color: var(--text); }
@@ -180,31 +185,41 @@
 </head>
 <body>
 
-<div class="header" id="header">
-    <div class="header-inner">
-        <button class="btn-icon btn-back hidden" id="btnBack" title="رجوع">‹</button>
-        <span class="title" id="headerTitle">📦 مخزوني</span>
-        <button class="btn-icon btn-sales" id="btnSales" title="المبيعات">🛒</button>
-        <button class="btn-icon btn-backup" id="btnBackup" title="نسخ احتياطي">💾</button>
-        <button class="btn-icon btn-settings" id="btnSettings" title="إدارة ربط السيريال">⚙️</button>
-        <button class="btn-icon btn-search" id="btnSearch" title="بحث">🔍</button>
+<div id="splash-screen">
+    <div class="splash-content">
+        <div class="logo">📦</div>
+        <h1>مخزوني SMART</h1>
+        <p>نظام إدارة المخزون والمبيعات الذكي</p>
     </div>
 </div>
 
-<div class="breadcrumb" id="breadcrumb">
-    <span>🏠</span><span class="sep">›</span><span class="crumb-active">الرئيسية</span>
+<div id="app-container" style="display: none;">
+    <div class="header" id="header">
+        <div class="header-inner">
+            <button class="btn-icon btn-back hidden" id="btnBack" title="رجوع">‹</button>
+            <span class="title" id="headerTitle">📦 مخزوني SMART</span>
+            <button class="btn-icon btn-sales" id="btnSales" title="المبيعات">🛒</button>
+            <button class="btn-icon btn-backup" id="btnBackup" title="نسخ احتياطي">💾</button>
+            <button class="btn-icon btn-settings" id="btnSettings" title="إدارة ربط السيريال">⚙️</button>
+            <button class="btn-icon btn-search" id="btnSearch" title="بحث">🔍</button>
+        </div>
+    </div>
+
+    <div class="breadcrumb" id="breadcrumb">
+        <span>🏠</span><span class="sep">›</span><span class="crumb-active">الرئيسية</span>
+    </div>
+
+    <div class="search-bar-wrap hidden" id="searchWrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="بحث...">
+    </div>
+
+    <div class="stats-row" id="statsRow"></div>
+    <div class="total-bars" id="totalBars"></div>
+    <div class="main-content" id="mainContent"></div>
+
+    <button class="fab" id="fab" title="إضافة">+</button>
 </div>
-
-<div class="search-bar-wrap hidden" id="searchWrap">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="searchInput" placeholder="بحث...">
-</div>
-
-<div class="stats-row" id="statsRow"></div>
-<div class="total-bars" id="totalBars"></div>
-<div class="main-content" id="mainContent"></div>
-
-<button class="fab" id="fab" title="إضافة">+</button>
 
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-sheet" id="modalSheet">
@@ -232,9 +247,18 @@
 
 <script>
     (function() {
-        const STORAGE_KEY = 'shelves_inventory_v14';
-        const MAPPINGS_KEY = 'serial_mappings_v10';
-        const SALES_KEY = 'sales_history_v9';
+        // Splash screen
+        setTimeout(() => {
+            const splash = document.getElementById('splash-screen');
+            const app = document.getElementById('app-container');
+            splash.classList.add('fade-out');
+            app.style.display = 'block';
+            setTimeout(() => { splash.style.display = 'none'; }, 600);
+        }, 2000);
+
+        const STORAGE_KEY = 'shelves_inventory_v15';
+        const MAPPINGS_KEY = 'serial_mappings_v11';
+        const SALES_KEY = 'sales_history_v10';
 
         function loadData() {
             try {
@@ -286,7 +310,7 @@
             currentView = view;
             if(view === 'home') {
                 currentShelfId=null; currentSubShelfId=null; $btnBack.classList.add('hidden'); $btnSettings.classList.remove('hidden'); $btnBackup.classList.remove('hidden'); $btnSales.classList.remove('hidden');
-                $headerTitle.textContent='📦 مخزوني'; $breadcrumb.innerHTML='<span>🏠</span><span class="sep">›</span><span class="crumb-active">الرئيسية</span>';
+                $headerTitle.textContent='📦 مخزوني SMART'; $breadcrumb.innerHTML='<span>🏠</span><span class="sep">›</span><span class="crumb-active">الرئيسية</span>';
                 $searchWrap.classList.add('hidden'); $fab.style.display='flex';
             } else if(view === 'shelf') {
                 currentShelfId=shelfId; currentSubShelfId=null; $btnBack.classList.remove('hidden'); $btnSettings.classList.add('hidden'); $btnBackup.classList.add('hidden'); $btnSales.classList.add('hidden');
@@ -534,10 +558,8 @@
             }
             $mainContent.appendChild(productsSection);
 
-            // إضافة الرسوم البيانية
             drawSalesCharts();
 
-            // ربط أحداث البيع
             document.querySelectorAll('[data-sell]').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -551,7 +573,6 @@
                 });
             });
 
-            // ربط أزرار حذف المبيعات
             document.querySelectorAll('.btn-delete-sale').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -568,30 +589,22 @@
 
         function drawSalesCharts() {
             if (salesHistory.length === 0) return;
-
-            // تجهيز بيانات الأنواع
             const typeMap = new Map();
             salesHistory.forEach(sale => {
                 const prod = findProductById(sale.productId);
                 const type = prod ? prod.product.type : 'غير معروف';
                 typeMap.set(type, (typeMap.get(type) || 0) + sale.quantity);
             });
-
-            // تجهيز بيانات الأرباح حسب المنتج
             const profitMap = new Map();
             salesHistory.forEach(sale => {
                 profitMap.set(sale.productName, (profitMap.get(sale.productName) || 0) + (sale.totalProfit || 0));
             });
-
             const chartContainer = document.createElement('div');
             chartContainer.className = 'chart-container';
             chartContainer.style.marginTop = '12px';
-
-            // رسم الدونات للأنواع
             const types = Array.from(typeMap.entries());
             const totalQty = types.reduce((sum, [, q]) => sum + q, 0);
             const colors = ['#0071e3', '#34c759', '#ff9500', '#ff3b30', '#af52de', '#ff2d55', '#5856d6', '#00b0ff'];
-
             if (types.length > 0) {
                 let gradientStops = [];
                 let cumulativePercent = 0;
@@ -602,7 +615,6 @@
                     gradientStops.push(`${colors[i % colors.length]} ${cumulativePercent}%`);
                 });
                 const donutStyle = `background: conic-gradient(${gradientStops.join(', ')})`;
-
                 const donutHtml = `
                     <div class="section-title">📊 توزيع المبيعات حسب النوع</div>
                     <div class="donut-chart" style="${donutStyle}">
@@ -621,11 +633,8 @@
                 `;
                 chartContainer.innerHTML += donutHtml;
             }
-
-            // رسم شارت الأرباح
             const profitEntries = Array.from(profitMap.entries()).sort((a,b) => b[1] - a[1]);
             const maxProfit = profitEntries[0]?.[1] || 1;
-
             if (profitEntries.length > 0) {
                 let profitHtml = '<div class="section-title" style="margin-top:16px;">💰 الأرباح حسب المنتج</div>';
                 profitEntries.forEach(([name, profit]) => {
@@ -644,7 +653,6 @@
                 });
                 chartContainer.innerHTML += profitHtml;
             }
-
             $mainContent.appendChild(chartContainer);
         }
 
@@ -670,7 +678,6 @@
 الخصم: ${finalDiscount.toFixed(2)} ₪
 الإجمالي النهائي: ${totalPrice.toFixed(2)} ₪
 الربح: ${totalProfit.toFixed(2)} ₪`;
-
             showConfirm('تأكيد البيع', confirmMsg, () => {
                 product.stock = (product.stock||0) - quantity;
                 const saleRecord = {
@@ -801,12 +808,26 @@
         function openBackupModal() {
             openModal('💾 نسخ احتياطي', '<p style="text-align:center;margin-bottom:16px;">تصدير أو استيراد كامل البيانات (تشمل المبيعات)</p>', 'تصدير', close => { exportData(); close(); }, 'إلغاء', null, { label:'استيراد', onClick: close => { close(); $importFile.click(); } });
         }
+
         function exportData() {
-            const backup = { shelves, serialMappings, salesHistory, exportDate: new Date().toISOString() };
+            const now = new Date();
+            const dateStr = now.getFullYear() + '-' +
+                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                String(now.getDate()).padStart(2, '0');
+            const timeStr = String(now.getHours()).padStart(2, '0') + '-' +
+                String(now.getMinutes()).padStart(2, '0') + '-' +
+                String(now.getSeconds()).padStart(2, '0');
+            const filename = `مخزوني_نسخ_احتياطي_${dateStr}_${timeStr}.json`;
+
+            const backup = { shelves, serialMappings, salesHistory, exportDate: now.toISOString() };
             const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'مخزوني_نسخ_احتياطي.json'; a.click();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.click();
             showToast('تم التصدير ✓');
         }
+
         $importFile.addEventListener('change', function() {
             const file = this.files[0]; if(!file) return;
             const reader = new FileReader();
