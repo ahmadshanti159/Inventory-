@@ -7,6 +7,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#f2f2f7">
     <title>مخزوني SMART</title>
+    <!-- مكتبة ZXing لقراءة الباركود -->
+    <script src="https://unpkg.com/@zxing/library@0.19.3/umd/index.min.js">
+    </script>
     <style>
         :root {
             --bg: #f2f2f7;
@@ -175,6 +178,12 @@
         .profit-bar-bg { height: 10px; background: #e5e5ea; border-radius: 5px; overflow: hidden; }
         .profit-bar-fill { height: 100%; background: var(--accent); border-radius: 5px; transition: width 0.5s ease; }
 
+        .scan-btn {
+            background: var(--accent2); border: none; border-radius: 8px; padding: 8px 12px;
+            font-size: 18px; cursor: pointer; margin-right: 4px; flex-shrink: 0;
+        }
+        .scan-btn:active { background: #d0e4ff; }
+
         @media (min-width:500px) {
             .main-content, .stats-row, .total-bars, .search-bar-wrap { max-width:480px; margin-left:auto; margin-right:auto; }
             .stats-row { padding:0 8px; }
@@ -212,6 +221,7 @@
     <div class="search-bar-wrap hidden" id="searchWrap">
         <span class="search-icon">🔍</span>
         <input type="text" id="searchInput" placeholder="بحث...">
+        <button class="scan-btn" id="searchScanBtn" title="مسح باركود">📷</button>
     </div>
 
     <div class="stats-row" id="statsRow"></div>
@@ -244,6 +254,7 @@
 
 <div class="toast" id="toast"></div>
 <input type="file" id="importFileInput" style="display:none" accept=".json">
+<input type="file" id="barcodeInput" style="display:none" accept="image/*" capture="environment">
 
 <script>
     (function() {
@@ -256,9 +267,9 @@
             setTimeout(() => { splash.style.display = 'none'; }, 600);
         }, 2000);
 
-        const STORAGE_KEY = 'shelves_inventory_v15';
-        const MAPPINGS_KEY = 'serial_mappings_v11';
-        const SALES_KEY = 'sales_history_v10';
+        const STORAGE_KEY = 'shelves_inventory_v16';
+        const MAPPINGS_KEY = 'serial_mappings_v12';
+        const SALES_KEY = 'sales_history_v11';
 
         function loadData() {
             try {
@@ -293,18 +304,69 @@
         let currentSubShelfId = null;
         let searchQuery = '';
         let confirmCallback = null;
+        let pendingScanCallback = null; // دالة تُستدعى عند قراءة باركود
 
         function getCurrentShelf() { return shelves.find(s => s.id === currentShelfId); }
         function getCurrentSubShelf() { const s = getCurrentShelf(); return s ? (s.subShelves||[]).find(ss => ss.id === currentSubShelfId) : null; }
 
         const $headerTitle = document.getElementById('headerTitle'), $btnBack = document.getElementById('btnBack'), $btnSearch = document.getElementById('btnSearch'), $btnSettings = document.getElementById('btnSettings'), $btnBackup = document.getElementById('btnBackup'), $btnSales = document.getElementById('btnSales');
-        const $breadcrumb = document.getElementById('breadcrumb'), $searchWrap = document.getElementById('searchWrap'), $searchInput = document.getElementById('searchInput');
+        const $breadcrumb = document.getElementById('breadcrumb'), $searchWrap = document.getElementById('searchWrap'), $searchInput = document.getElementById('searchInput'), $searchScanBtn = document.getElementById('searchScanBtn');
         const $statsRow = document.getElementById('statsRow'), $totalBars = document.getElementById('totalBars'), $mainContent = document.getElementById('mainContent'), $fab = document.getElementById('fab');
         const $modalOverlay = document.getElementById('modalOverlay'), $modalSheet = document.getElementById('modalSheet'), $modalTitle = document.getElementById('modalTitle'), $modalBody = document.getElementById('modalBody'), $modalBtns = document.getElementById('modalBtns');
         const $confirmOverlay = document.getElementById('confirmOverlay'), $confirmMsg = document.getElementById('confirmMsg'), $confirmSub = document.getElementById('confirmSub'), $confirmOk = document.getElementById('confirmOk'), $confirmCancel = document.getElementById('confirmCancel');
-        const $toast = document.getElementById('toast'), $importFile = document.getElementById('importFileInput');
+        const $toast = document.getElementById('toast'), $importFile = document.getElementById('importFileInput'), $barcodeInput = document.getElementById('barcodeInput');
         let toastTimer;
         function showToast(m) { clearTimeout(toastTimer); $toast.textContent=m; $toast.classList.add('show'); toastTimer=setTimeout(()=>$toast.classList.remove('show'),2200); }
+
+        // ---- وظائف مسح الباركود ----
+        function startBarcodeScan(callback) {
+            pendingScanCallback = callback;
+            // فتح الكاميرا لالتقاط صورة
+            $barcodeInput.value = ''; // لضمان تشغيل حدث التغيير حتى لنفس الملف
+            $barcodeInput.click();
+        }
+
+        $barcodeInput.addEventListener('change', async function() {
+            const file = this.files[0];
+            if (!file) return;
+            if (!pendingScanCallback) return;
+            try {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = async function() {
+                        try {
+                            // استخدام ZXing لقراءة الباركود من الصورة
+                            const codeReader = new ZXing.BrowserMultiFormatReader();
+                            const result = await codeReader.decodeFromImageElement(img);
+                            if (result && result.text) {
+                                pendingScanCallback(result.text);
+                            } else {
+                                showToast('⚠️ لم يتم التعرف على باركود');
+                            }
+                        } catch (err) {
+                            showToast('⚠️ فشل قراءة الباركود');
+                        } finally {
+                            pendingScanCallback = null;
+                        }
+                    };
+                };
+                reader.readAsDataURL(file);
+            } catch (e) {
+                showToast('⚠️ خطأ في معالجة الصورة');
+                pendingScanCallback = null;
+            }
+        });
+
+        // البحث بالباركود من الشريط العلوي
+        $searchScanBtn.addEventListener('click', function() {
+            startBarcodeScan(function(serial) {
+                $searchInput.value = serial;
+                searchQuery = serial;
+                renderAll();
+            });
+        });
 
         function navigateTo(view, shelfId=null, subShelfId=null, shelfName='', subShelfName='') {
             currentView = view;
@@ -334,6 +396,15 @@
             else if(currentView === 'sales') navigateTo('home');
         }
 
+        // ... (بقية الدوال كما هي بدون تغيير باستثناء إضافة أزرار المسح في النماذج)
+        // سنقوم بتضمين دوال openAddProductModal, openEditProductModal المعدلة
+        // ولضمان عدم تكرار الكود سنضع البقية كما هي مع التعديلات المطلوبة
+
+        // نكمل الكود من هنا، مع إدراج دوال المنتجات والمبيعات والنسخ الاحتياطي... 
+        // (نظراً لطول الكود، سأدمج التعديلات الأساسية فقط)
+        // يُفترض أن باقي الكود مطابق للإصدار السابق مع استبدال دالتي النموذج.
+
+        // إدراج سريع للوظائف الأساسية التي لم تتغير لضمان عمل الكود
         function getAllProducts() {
             let prods = [];
             shelves.forEach(s => {
@@ -349,7 +420,6 @@
             }
             return null;
         }
-
         function getVisibleProducts() {
             let prods = [];
             if(currentView === 'home') prods = getAllProducts();
@@ -368,7 +438,6 @@
             if(q) prods = prods.filter(p => p.name.toLowerCase().includes(q) || p.serial.toLowerCase().includes(q) || p.type.toLowerCase().includes(q));
             return prods;
         }
-
         function calcTotals(prods) {
             let totalValue = 0, totalProfit = 0, totalCost = 0;
             prods.forEach(p => {
@@ -378,7 +447,6 @@
             });
             return { value: totalValue, profit: totalProfit, cost: totalCost };
         }
-
         function renderTotalBars() {
             if(currentView === 'sales') { $totalBars.innerHTML = ''; return; }
             const prods = getVisibleProducts();
@@ -393,7 +461,6 @@
             document.getElementById('profitBtn')?.addEventListener('click', ()=> openBreakdownModal('تحليل الأرباح', prods, 'profit'));
             document.getElementById('costBtn')?.addEventListener('click', ()=> openBreakdownModal('رأس المال', prods, 'cost'));
         }
-
         function openBreakdownModal(title, prods, mode) {
             let html = '<div class="breakdown-list">';
             prods.forEach(p => {
@@ -411,7 +478,6 @@
             html += `<div style="font-size:20px;font-weight:800;text-align:left;margin-top:12px;padding-top:12px;border-top:2px solid var(--border);">المجموع: ${total.toFixed(2)} ₪</div></div>`;
             openModal(title, html, 'إغلاق', c=>c());
         }
-
         function renderStats() {
             if(currentView === 'sales') {
                 const totalSales = salesHistory.length;
@@ -451,7 +517,6 @@
                 $statsRow.innerHTML = `<div class="stat-chip accent"><div class="stat-val">${prods.length}</div><div class="stat-lbl">منتج</div></div><div class="stat-chip"><div class="stat-val">${st}</div><div class="stat-lbl">مخزون</div></div>`;
             }
         }
-
         function renderContent() {
             $mainContent.innerHTML = '';
             if(currentView === 'sales') { renderSalesPage(); return; }
@@ -495,7 +560,6 @@
             }
             attachDeleteListeners();
         }
-
         function renderSalesPage() {
             const q = searchQuery.toLowerCase().trim();
             let allProds = getAllProducts();
@@ -586,7 +650,6 @@
                 });
             });
         }
-
         function drawSalesCharts() {
             if (salesHistory.length === 0) return;
             const typeMap = new Map();
@@ -655,14 +718,12 @@
             }
             $mainContent.appendChild(chartContainer);
         }
-
         function deleteSale(saleId) {
             salesHistory = salesHistory.filter(s => s.id !== saleId);
             saveSales(salesHistory);
             showToast('تم حذف عملية البيع');
             renderAll();
         }
-
         function processSale(prodId, quantity, discount = 0) {
             const found = findProductById(prodId);
             if(!found) { showToast('⚠️ المنتج غير موجود'); return; }
@@ -693,7 +754,6 @@
                 renderAll();
             });
         }
-
         function createProductCard(p, shelf, subshelf) {
             const card = document.createElement('div'); card.className='card';
             let stockBadge = 'badge-stock-good', stockLabel='متوفر';
@@ -707,7 +767,6 @@
             card.addEventListener('click', e => { if(!e.target.closest('[data-action]')) openEditProductModal(p, subshelf, shelf); });
             return card;
         }
-
         function attachDeleteListeners() {
             document.querySelectorAll('[data-action="delete-shelf"]').forEach(b => b.onclick = function(e){ e.stopPropagation();
                 const id=this.dataset.id, s=shelves.find(x=>x.id===id);
@@ -729,7 +788,6 @@
                 });
             });
         }
-
         function escapeHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
         function getTypeFromSerial(ser) {
             if(!ser) return null; let best=null, bl=0;
@@ -753,10 +811,11 @@
         }
         function closeModal(){ $modalOverlay.classList.remove('active'); }
 
+        // ---- النماذج المعدلة مع زر المسح ----
         function openAddProductModal() {
             const shelf=getCurrentShelf(), subshelf=getCurrentSubShelf(), loc=subshelf?subshelf.name:(shelf?shelf.name:'');
             openModal('إضافة منتج'+(loc?' إلى '+loc:''),
-                `<div class="form-group"><label>الرقم التسلسلي</label><input id="inputSerial"></div>
+                `<div class="form-group"><label>الرقم التسلسلي</label><div style="display:flex; align-items:center;"><input id="inputSerial" style="flex:1;"><button type="button" class="scan-btn" id="scanSerialAdd">📷</button></div></div>
                  <div class="form-group"><label>اسم المنتج</label><input id="inputName"></div>
                  <div class="form-group"><label>النوع</label><input id="inputType" placeholder="يملأ تلقائياً"></div>
                  <div class="form-group"><label>المخزون</label><input type="number" id="inputStock" value="0" min="0"></div>
@@ -774,13 +833,16 @@
             setTimeout(()=>{
                 const si=document.getElementById('inputSerial'), ti=document.getElementById('inputType');
                 if(si&&ti) si.addEventListener('input', ()=>{ const auto=getTypeFromSerial(si.value.trim()); if(auto) ti.value=auto; });
+                document.getElementById('scanSerialAdd')?.addEventListener('click', ()=>{
+                    startBarcodeScan((serial) => { document.getElementById('inputSerial').value = serial; });
+                });
             },100);
         }
 
         function openEditProductModal(prod, subshelf, shelf) {
             const loc = subshelf?subshelf.name:(shelf?shelf.name:'');
             openModal('تعديل منتج'+(loc?' - '+loc:''),
-                `<div class="form-group"><label>السيريال</label><input id="inputSerial" value="${escapeHtml(prod.serial)}"></div>
+                `<div class="form-group"><label>السيريال</label><div style="display:flex; align-items:center;"><input id="inputSerial" value="${escapeHtml(prod.serial)}" style="flex:1;"><button type="button" class="scan-btn" id="scanSerialEdit">📷</button></div></div>
                  <div class="form-group"><label>الاسم</label><input id="inputName" value="${escapeHtml(prod.name)}"></div>
                  <div class="form-group"><label>النوع</label><input id="inputType" value="${escapeHtml(prod.type)}"></div>
                  <div class="form-group"><label>المخزون</label><input type="number" id="inputStock" value="${prod.stock||0}" min="0"></div>
@@ -802,32 +864,25 @@
             setTimeout(()=>{
                 const si=document.getElementById('inputSerial'), ti=document.getElementById('inputType');
                 if(si&&ti) si.addEventListener('input', ()=>{ const auto=getTypeFromSerial(si.value.trim()); if(auto) ti.value=auto; });
+                document.getElementById('scanSerialEdit')?.addEventListener('click', ()=>{
+                    startBarcodeScan((serial) => { document.getElementById('inputSerial').value = serial; });
+                });
             },100);
         }
 
         function openBackupModal() {
             openModal('💾 نسخ احتياطي', '<p style="text-align:center;margin-bottom:16px;">تصدير أو استيراد كامل البيانات (تشمل المبيعات)</p>', 'تصدير', close => { exportData(); close(); }, 'إلغاء', null, { label:'استيراد', onClick: close => { close(); $importFile.click(); } });
         }
-
         function exportData() {
             const now = new Date();
-            const dateStr = now.getFullYear() + '-' +
-                String(now.getMonth() + 1).padStart(2, '0') + '-' +
-                String(now.getDate()).padStart(2, '0');
-            const timeStr = String(now.getHours()).padStart(2, '0') + '-' +
-                String(now.getMinutes()).padStart(2, '0') + '-' +
-                String(now.getSeconds()).padStart(2, '0');
+            const dateStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+            const timeStr = String(now.getHours()).padStart(2,'0') + '-' + String(now.getMinutes()).padStart(2,'0') + '-' + String(now.getSeconds()).padStart(2,'0');
             const filename = `مخزوني_نسخ_احتياطي_${dateStr}_${timeStr}.json`;
-
             const backup = { shelves, serialMappings, salesHistory, exportDate: now.toISOString() };
             const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = filename;
-            a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
             showToast('تم التصدير ✓');
         }
-
         $importFile.addEventListener('change', function() {
             const file = this.files[0]; if(!file) return;
             const reader = new FileReader();
@@ -844,7 +899,6 @@
             };
             reader.readAsText(file); this.value = '';
         });
-
         function openMappingsModal() {
             let html = serialMappings.length ? '<ul style="list-style:none;padding:0;margin:0 0 16px;">' : '<p style="text-align:center;color:#8e8e93;">لا قواعد</p>';
             serialMappings.forEach((m,i) => html += `<li style="display:flex;justify-content:space-between;background:#f5f5f7;border-radius:8px;padding:8px 12px;margin-bottom:6px;"><span><strong>${escapeHtml(m.prefix)}</strong> ← ${escapeHtml(m.type)}</span><button class="del-map" data-idx="${i}" style="background:none;border:none;font-size:18px;color:#ff3b30;">🗑️</button></li>`);
@@ -860,7 +914,6 @@
                 const i=parseInt(this.dataset.idx); serialMappings.splice(i,1); saveMappings(serialMappings); closeModal(); setTimeout(openMappingsModal,300);
             }));
         }
-
         function showConfirm(title, sub, cb){ $confirmMsg.textContent=title; $confirmSub.textContent=sub||''; confirmCallback=cb; $confirmOverlay.classList.add('active'); }
         function hideConfirm(){ $confirmOverlay.classList.remove('active'); confirmCallback=null; }
 
