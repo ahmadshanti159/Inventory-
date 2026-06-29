@@ -178,7 +178,6 @@
         .profit-bar-bg { height: 10px; background: #e5e5ea; border-radius: 5px; overflow: hidden; }
         .profit-bar-fill { height: 100%; background: var(--accent); border-radius: 5px; transition: width 0.5s ease; }
 
-        /* أنماط الماسح الضوئي */
         .scanner-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .scanner-overlay.active { opacity: 1; pointer-events: auto; }
         .scanner-container { width: 100%; max-width: 400px; margin: 0 auto; border: 3px solid #fff; border-radius: 16px; overflow: hidden; background: #000; }
@@ -234,7 +233,6 @@
     <button class="fab" id="fab" title="إضافة">+</button>
 </div>
 
-<!-- نافذة الماسح الضوئي المباشر -->
 <div class="scanner-overlay" id="scannerOverlay">
     <div class="scanner-title">📷 وجّه الكاميرا نحو الباركود</div>
     <div class="scanner-container">
@@ -269,7 +267,6 @@
 
 <script>
     (function() {
-        // Splash screen
         setTimeout(() => {
             const splash = document.getElementById('splash-screen');
             const app = document.getElementById('app-container');
@@ -278,9 +275,9 @@
             setTimeout(() => { splash.style.display = 'none'; }, 600);
         }, 2000);
 
-        const STORAGE_KEY = 'shelves_inventory_v20';
-        const MAPPINGS_KEY = 'serial_mappings_v16';
-        const SALES_KEY = 'sales_history_v15';
+        const STORAGE_KEY = 'shelves_inventory_v21';
+        const MAPPINGS_KEY = 'serial_mappings_v17';
+        const SALES_KEY = 'sales_history_v16';
 
         function loadData() {
             try {
@@ -316,7 +313,6 @@
         let searchQuery = '';
         let confirmCallback = null;
 
-        // ---- الماسح الضوئي المباشر (بدون التقاط صورة) ----
         let html5QrCode = null;
         let scanCallback = null;
         const $scannerOverlay = document.getElementById('scannerOverlay');
@@ -370,7 +366,6 @@
         let toastTimer;
         function showToast(m) { clearTimeout(toastTimer); $toast.textContent=m; $toast.classList.add('show'); toastTimer=setTimeout(()=>$toast.classList.remove('show'),2200); }
 
-        // مسح باركود من شريط البحث
         $searchScanBtn.addEventListener('click', function() {
             startBarcodeScan(function(serial) {
                 $searchInput.value = serial;
@@ -623,7 +618,7 @@
                         <div class="info"><div class="name">${escapeHtml(p.name)}</div><div class="meta"><span>🔢 ${escapeHtml(p.serial)}</span><span>📂 ${escapeHtml(p.type)}</span><span>📦 ${p.stock||0}</span><span>💰 ${(p.price||0).toFixed(2)} ₪</span></div></div>
                         ${stockBadge}
                         <input type="number" class="sale-quantity-input" id="qty_${p.id}" placeholder="0" min="0" max="${p.stock||0}" value="0" style="width:50px;">
-                        <input type="number" class="sale-discount-input" id="disc_${p.id}" placeholder="خصم" min="0" step="0.01" value="0" style="width:60px;">
+                        <input type="number" class="sale-discount-input" id="disc_${p.id}" placeholder="%" min="0" step="0.01" style="width:60px;">
                         <button class="btn btn-success" style="padding:8px 10px;font-size:13px;flex-shrink:0;" data-sell="${p.id}">بيع</button>`;
                     card.addEventListener('click', e => { if(!e.target.closest('button') && !e.target.closest('input')) { const inp=card.querySelector('.sale-quantity-input'); if(inp) inp.focus(); } });
                     productsSection.appendChild(card);
@@ -897,7 +892,6 @@
                 String(now.getMinutes()).padStart(2, '0') + '-' +
                 String(now.getSeconds()).padStart(2, '0');
             const filename = `مخزوني_نسخ_احتياطي_${dateStr}_${timeStr}.json`;
-
             const backup = { shelves, serialMappings, salesHistory, exportDate: now.toISOString() };
             const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
             const a = document.createElement('a');
